@@ -1,0 +1,5 @@
+
+.idea/*
+docs/build/*
+*.pyc
+unreal/EpicDeadlineService/Content/Python/Lib/Win64/*
