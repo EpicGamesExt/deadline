@@ -1,0 +1,25 @@
+[About]
+Type=label
+Label=About
+Category=About Plugin
+CategoryOrder=-1
+Index=0
+Default=Unreal Engine Plugin for Deadline
+Description=Not configurable
+
+[ConcurrentTasks]
+Type=label
+Label=ConcurrentTasks
+Category=About Plugin
+CategoryOrder=-1
+Index=0
+Default=True
+Description=Not configurable
+
+[Executable]
+Type=String
+Label=Executable to test job submission
+Category=Options
+Index=1
+Default=C:\Windows\System32\cmd.exe
+Description=Unreal Executable to process the job
