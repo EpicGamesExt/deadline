@@ -5,64 +5,82 @@ This is a commandline script that can be used to execute local and remote render
 This script can be executed in Editor or via commandline.
 
 This script has several modes:
+
     manifest:
         This mode allows you to specify a full path to manifest file and a queue will be created from the manifest.
+
         Command:
-            ` py mrq_cli.py manifest "Full/Path/To/Manifest.utxt" `
+            .. code-block:: shell
+
+                $ py mrq_cli.py manifest "Full/Path/To/Manifest.utxt"
         Options:
-            --load: This allows you to only load the manifest file without executing a render.
+            *--load*: This allows you to only load the manifest file without executing a render.
 
     sequence:
         This mode allows you to specify a specific level sequence, map and movie render queue preset to render.
+
         Command:
-            ` py mrq_cli.py sequence my_level_sequence_name my_map_name my_mrq_preset_name `
+            .. code-block:: shell
+
+                $ py mrq_cli.py sequence my_level_sequence_name my_map_name my_mrq_preset_name
 
     queue:
         This mode allows you to load and render a queue asset.
+
         Command:
-            ` py mrq_cli.py queue /Game/path/to/queue/asset `
+            .. code-block:: shell
+
+               $ py mrq_cli.py queue "/Game/path/to/queue/asset"
         Options:
-            --load: This allows you to only load the queue asset without executing a render.
-            --jobs: A queue can have more than one job. This allows you to specify particular jobs in the queue and render its current state
+            *--load*: This allows you to only load the queue asset without executing a render.
+
+            *--jobs*: A queue can have more than one job. This allows you to specify particular jobs in the queue and render its current state
 
     render:
         This mode allows you to render the jobs in the current loaded queue. This is useful when you what to execute
         renders in multi steps. For example, executing in a farm context, you can load a manifest file and trigger
-        a multiple different shots for the current worker machine based on some database without reloading the
+        multiple different shots for the current worker machine based on some database without reloading the
         manifest file everytime. By default, the queue is rendered in its current state if no other arguments are
         specified.
+
         Command:
-            ` py mrq_cli.py render `
+            .. code-block:: shell
+
+                $ py mrq_cli.py render
         Options:
-            --jobs: The current queue can have more than one job. This allows you to specify a particular list of jobs
-                    in the queue and render in its current state
+            *--jobs*: The current queue can have more than one job. This allows you to specify a particular list of jobs in the queue and render in its current state
 
 
-Optional Arguments:
+**Optional Arguments**:
+
     There a few optional arguments that can be supplied to the script and are global to the modes
 
-    --shots: This option allows you to specify a list of shots to render in the queue.
-            This optional argument can be used with both modes of the script.
+    *--shots*: This option allows you to specify a list of shots to render in the queue. This optional argument can be used with both modes of the script.
 
-    --all-shots: This options enables all shots on all jobs. This is useful when you want to render everything in a
-                queue.
+    *--all-shots*: This options enables all shots on all jobs. This is useful when you want to render everything in a queue.
 
-    --user: This options sets the author on the render job. If None is provided, the current logged-in user is used.
+    *--user*: This options sets the author on the render job. If None is provided, the current logged-in user is used.
 
-    --remote/-r: This option submits the render to a remote process. This remote process is whatever is set in the
-                MRQ remote executor option. This script is targeted for Deadline. However, it can still support
-                the default "Out-of-Process" executor. This flag can be used with both modes of the script.
-                When specifying a remote command for deadline, you'll need to also supply these commands:
+    *--remote/-r*: This option submits the render to a remote process. This remote process is whatever is set in the
+    MRQ remote executor option. This script is targeted for Deadline. However, it can still support
+    the default "Out-of-Process" executor. This flag can be used with both modes of the script.
+    When specifying a remote command for deadline, you'll need to also supply these commands:
 
-                    --batch_name: This sets the batch name on the executor.
-                    --preset_library: The preset library name for Deadline job/plugin info
-                    --preset_name: The preset name in the preset library to use.
+        *--batch_name*: This sets the batch name on the executor.
+
+        *--preset_library*: The preset library name for Deadline job/plugin info
+
+        *--preset_name*: The preset name in the preset library to use.
 
 Editor CMD window:
-    py mrq_cli.py <--remote> sequence sequence_name map mrq_preset_name
+    .. code-block:: shell
+
+        $ py mrq_cli.py <--remote> sequence sequence_name map mrq_preset_name
 
 Editor Commandline:
-    UnrealEditor.exe uproject_name/path <startup-args> -execcmds="py mrq_cli.py sequence sequence_name map mrq_preset_name --cmdline"
+    .. code-block:: shell
+
+        UnrealEditor.exe uproject_name/path <startup-args> -execcmds="py mrq_cli.py sequence sequence_name map mrq_preset_name --cmdline"
 
 In a commandline interface, it is very important to append `--cmdline` to the script args as this will tell the editor
 to shut down after a render is complete. Currently, this is the only method to keep the editor open till a render is

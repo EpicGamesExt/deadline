@@ -18,6 +18,7 @@ from .utils import (
 def setup_sequence_parser(subparser):
     """
     This method adds a custom execution function and args to a sequence subparser
+
     :param subparser: Subparser for processing custom sequences
     """
     # We will use the level sequence and the map as our context for
@@ -59,20 +60,20 @@ def render_current_sequence(
 ):
     """
     Renders a sequence with a map and mrq preset
-    :param sequence_name: Sequence to render
-    :param sequence_map: Map to load sequence
-    :param mrq_preset: MRQ preset for rendering sequence
-    :param user: Render user
-    :param shots: Shots to render
-    :param is_remote: Flag to determine if the job should be executed remotely
-    :param is_cmdline: Flag to determine if the render was executed via
-            commandline
-    :param remote_batch_name: Remote render batch name
-    :param remote_preset_name: Preset library preset name
-    :param remote_preset_library:  Preset Library
+
+    :param str sequence_name: Sequence to render
+    :param str sequence_map: Map to load sequence
+    :param str mrq_preset: MRQ preset for rendering sequence
+    :param str user: Render user
+    :param list shots: Shots to render
+    :param bool is_remote: Flag to determine if the job should be executed remotely
+    :param bool is_cmdline: Flag to determine if the render was executed via commandline
+    :param str remote_batch_name: Remote render batch name
+    :param str remote_preset_name: Preset library preset name
+    :param str remote_preset_library:  Preset Library
     :param executor_instance: Movie Pipeline executor Instance
-    :param output_dir_override: Movie Pipeline output directory override
-    :param output_filename_override: Movie Pipeline filename format override
+    :param str output_dir_override: Movie Pipeline output directory override
+    :param str output_filename_override: Movie Pipeline filename format override
     :return: MRQ executor
     """
 

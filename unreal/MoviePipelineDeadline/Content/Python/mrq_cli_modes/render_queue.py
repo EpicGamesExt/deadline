@@ -16,6 +16,7 @@ from .utils import (
 def setup_queue_parser(subparser):
     """
     This method adds a custom execution function and args to a queue subparser
+
     :param subparser: Subparser for processing custom sequences
     """
     # Set the name of the job
@@ -63,6 +64,25 @@ def render_queue_asset(
     output_dir_override=None,
     output_filename_override=None
 ):
+    """
+    Render using a Movie Render Queue asset
+
+    :param str queue_name: The name of the Queue asset
+    :param bool only_load: Only load the queue asset. This is usually used when you need to process intermediary steps before rendering
+    :param list shots: Shots to render from the queue.
+    :param list jobs: The list job to render in the Queue asset.
+    :param bool all_shots: Flag to render all shots in a job in the queue.
+    :param bool is_cmdline: Flag to determine if the job is a commandline job
+    :param bool is_remote: Flag to determine if the jobs should be rendered remote
+    :param str user: Render user
+    :param str remote_batch_name: Batch name for remote renders
+    :param str remote_preset_name: Preset name from the Preset library
+    :param str remote_preset_library: Remote render preset library
+    :param executor_instance: Movie Pipeline executor instance
+    :param str output_dir_override: Movie Pipeline output directory override
+    :param str output_filename_override: Movie Pipeline filename format override
+    :return: MRQ Executor
+    """
 
     # The queue subsystem behaves like a singleton so
     # clear all the jobs in the current queue.

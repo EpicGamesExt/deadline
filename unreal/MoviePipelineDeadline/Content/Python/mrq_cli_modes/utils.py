@@ -23,7 +23,8 @@ pipeline_executor = None
 def get_executor_instance(is_remote):
     """
     Method to return an instance of a render executor
-    :param is_remote: Flag to use the local or remote executor class
+
+    :param bool is_remote: Flag to use the local or remote executor class
     :return: Executor instance
     """
     is_soft_class_object = True
@@ -75,9 +76,10 @@ def get_executor_instance(is_remote):
 def execute_render(is_remote=False, executor_instance=None, is_cmdline=False):
     """
     Starts a render
-    :param is_remote: Flag to use the local or remote executor class
+
+    :param bool is_remote: Flag to use the local or remote executor class
     :param executor_instance: Executor instance used for rendering
-    :param is_cmdline: Flag to determine if the render was executed from a commandline.
+    :param bool is_cmdline: Flag to determine if the render was executed from a commandline.
     """
 
     if not executor_instance:
@@ -98,6 +100,7 @@ def execute_render(is_remote=False, executor_instance=None, is_cmdline=False):
 def setup_editor_exit_callback(executor_instance):
     """
     Setup callbacks for when you need to close the editor after a render
+
     :param executor_instance: Movie Pipeline executor instance
     """
 
@@ -135,8 +138,9 @@ def executor_failed_callback(executor, pipeline, is_fatal, error):
 def get_asset_data(name_or_path, asset_class):
     """
     Get the asset data for the asset name or path based on its class.
-    :param name_or_path: asset name or package name
-    :param asset_class: Asset class filter to use when looking for assets in registry
+
+    :param str name_or_path: asset name or package name
+    :param str asset_class: Asset class filter to use when looking for assets in registry
     :raises RuntimeError
     :return: Asset package if it exists
     """
@@ -183,10 +187,11 @@ def setup_remote_render_jobs(
     """
     This function sets up a render job with the options for a remote render.
     This is configured currently for deadline jobs.
-    :param batch_name: Remote render batch name
-    :param preset_name: Preset name in the preset library
-    :param preset_library: Preset library to use for job details
-    :param render_jobs: The list of render jobs to apply the ars to
+
+    :param str batch_name: Remote render batch name
+    :param str preset_name: Preset name in the preset library
+    :param str preset_library: Preset library to use for job details
+    :param list render_jobs: The list of render jobs to apply the ars to
     """
 
     unreal.log("Setting up Remote render executor.. ")
@@ -229,8 +234,9 @@ def setup_remote_render_jobs(
 def set_job_state(job, enable=False):
     """
     This method sets the state on a current job to enabled or disabled
+
     :param job: MoviePipeline job to enable/disable
-    :param enable: Flag to determine if a job should be or not
+    :param bool enable: Flag to determine if a job should be or not
     """
 
     if enable:
@@ -261,9 +267,10 @@ def set_job_state(job, enable=False):
 def update_render_output(job, output_dir=None, output_filename=None):
     """
     Updates that output directory and filename on a render job
+
     :param job: MRQ job
-    :param output_dir: Output directory for renders
-    :param output_filename: Output filename
+    :param str output_dir: Output directory for renders
+    :param str output_filename: Output filename
     """
 
     # Get the job output settings
@@ -298,10 +305,11 @@ def update_queue(
 ):
     """
     This function configures and renders a job based on the arguments
-    :param jobs: MRQ jobs to render
-    :param shots: Shots to render from jobs
-    :param all_shots: Flag for rendering all shots
-    :param user: Render user
+
+    :param list jobs: MRQ jobs to render
+    :param list shots: Shots to render from jobs
+    :param bool all_shots: Flag for rendering all shots
+    :param str user: Render user
     """
 
     # Iterate over all the jobs and make sure the jobs we want to
