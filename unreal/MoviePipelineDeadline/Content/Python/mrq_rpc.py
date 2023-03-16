@@ -38,6 +38,7 @@ class MRQRender(BaseRPC):
     def _get_queue(self):
         """
         Render a MRQ queue asset
+
         :return: MRQ queue asset name
         """
         if not self._queue:
@@ -48,6 +49,7 @@ class MRQRender(BaseRPC):
     def _get_sequence_data(self):
         """
         Get sequence data
+
         :return: Sequence data
         """
         if not self._sequence_data:
@@ -60,6 +62,7 @@ class MRQRender(BaseRPC):
     def _get_serialized_pipeline(self):
         """
         Get Serialized pipeline from Deadline
+
         :return:
         """
         if not self._manifest:
@@ -95,7 +98,7 @@ class MRQRender(BaseRPC):
 
     def execute(self):
         """
-        Start the render execution
+        Starts the render execution
         """
 
         # shots are listed as a dictionary of task id -> shotnames
@@ -178,10 +181,11 @@ class MRQRender(BaseRPC):
     ):
         """
         Executes a render from a queue
-        :param queue_path: Name/path of the queue asset
-        :param shots: Shots to render
-        :param output_dir_override: Movie Pipeline output directory
-        :param filename_format_override: Movie Pipeline filename format override
+
+        :param str queue_path: Name/path of the queue asset
+        :param list shots: Shots to render
+        :param str output_dir_override: Movie Pipeline output directory
+        :param str filename_format_override: Movie Pipeline filename format override
         """
         unreal.log(f"Executing Queue asset `{queue_path}`")
         unreal.log(f"Rendering shots: {shots}")
@@ -221,10 +225,11 @@ class MRQRender(BaseRPC):
     ):
         """
         Executes a render using a manifest file
-        :param manifest_file: serialized pipeline used to render a manifest file
-        :param shots: Shots to render
-        :param output_dir_override: Movie Pipeline output directory
-        :param filename_format_override: Movie Pipeline filename format override
+
+        :param str manifest_file: serialized pipeline used to render a manifest file
+        :param list shots: Shots to render
+        :param str output_dir_override: Movie Pipeline output directory
+        :param str filename_format_override: Movie Pipeline filename format override
         """
         unreal.log(f"Rendering shots: {shots}")
 
@@ -264,12 +269,13 @@ class MRQRender(BaseRPC):
     ):
         """
         Executes a render using a sequence level and map
-        :param sequence: Level Sequence name
-        :param level: Level
-        :param mrq_preset: MovieRenderQueue preset
-        :param shots: Shots to render
-        :param output_dir_override: Movie Pipeline output directory
-        :param filename_format_override: Movie Pipeline filename format override
+
+        :param str sequence: Level Sequence name
+        :param str level: Level
+        :param str mrq_preset: MovieRenderQueue preset
+        :param list shots: Shots to render
+        :param str output_dir_override: Movie Pipeline output directory
+        :param str filename_format_override: Movie Pipeline filename format override
         """
         unreal.log(
             f"Executing sequence `{sequence}` with map `{level}` "
@@ -308,6 +314,7 @@ class MRQRender(BaseRPC):
     def _get_executor_instance():
         """
         Gets an instance of the movie pipeline executor
+
         :return: Movie Pipeline Executor instance
         """
         return utils.get_executor_instance(False)
@@ -315,6 +322,7 @@ class MRQRender(BaseRPC):
     def _on_individual_shot_finished_callback(self, shot_params):
         """
         Callback to execute when a shot is done rendering
+
         :param shot_params: Movie pipeline shot params
         """
         unreal.log("Executing On individual shot callback")
@@ -438,13 +446,16 @@ class MRQRender(BaseRPC):
 
     def _on_job_finished(self, executor=None, success=None):
         """
-        Command to execute on executor finished
+        Callback to execute on executor finished
         """
         # TODO: add th ability to set the output directory for the task
         unreal.log(f"Task {self.current_task_id} complete!")
         self.task_complete = True
 
     def _on_job_failed(self, executor, pipeline, is_fatal, error):
+        """
+        Callback to execute on job failed
+        """
         unreal.log_error(f"Is fatal job error: {is_fatal}")
         unreal.log_error(
             f"An error occurred executing task `{self.current_task_id}`: \n\t{error}"

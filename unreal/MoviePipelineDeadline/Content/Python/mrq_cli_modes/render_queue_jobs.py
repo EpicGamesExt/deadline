@@ -16,6 +16,7 @@ from .utils import (
 def setup_render_parser(subparser):
     """
     This method adds a custom execution function and args to a render subparser
+
     :param subparser: Subparser for processing custom sequences
     """
 
@@ -35,15 +36,16 @@ def render_jobs(
 ):
     """
     This renders the current state of the queue
-    :param is_remote: Is this a remote render
-    :param is_cmdline: Is this a commandline render
+
+    :param bool is_remote: Is this a remote render
+    :param bool is_cmdline: Is this a commandline render
     :param executor_instance: Movie Pipeline Executor instance
-    :param remote_batch_name: Batch name for remote renders
-    :param remote_preset_name: Preset name from the Preset library
-    :param remote_preset_library: Remote render preset library
-    :param output_dir_override: Movie Pipeline output directory override
-    :param output_filename_override: Movie Pipeline filename format override
-    :return:
+    :param str remote_batch_name: Batch name for remote renders
+    :param str remote_preset_name: Preset name from the Preset library
+    :param str remote_preset_library: Remote render preset library
+    :param str output_dir_override: Movie Pipeline output directory override
+    :param str output_filename_override: Movie Pipeline filename format override
+    :return: MRQ executor
     """
 
     if not movie_pipeline_queue.get_jobs():

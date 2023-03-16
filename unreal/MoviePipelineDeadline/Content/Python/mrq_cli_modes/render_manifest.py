@@ -15,6 +15,7 @@ from .utils import movie_pipeline_queue
 def setup_manifest_parser(subparser):
     """
     This method adds a custom execution function and args to a subparser
+
     :param subparser: Subparser for processing manifest files
     """
     # Movie pipeline manifest file from disk
@@ -51,18 +52,19 @@ def render_queue_manifest(
 ):
     """
     Function to execute a render using a manifest file
-    :param manifest: Manifest file to render
-    :param load_only: Only load the manifest file
-    :param shots: Shots to render from the queue
-    :param user: Render user
-    :param is_remote: Flag to determine if the jobs should be rendered remote
-    :param is_cmdline: Flag to determine if the job is a commandline job
-    :param remote_batch_name: Batch name for remote renders
-    :param remote_preset_name: Preset name from the Preset library
-    :param remote_preset_library: Remote render preset library
+
+    :param str manifest: Manifest file to render
+    :param bool load_only: Only load the manifest file
+    :param list shots: Shots to render from the queue
+    :param str user: Render user
+    :param bool is_remote: Flag to determine if the jobs should be rendered remote
+    :param bool is_cmdline: Flag to determine if the job is a commandline job
+    :param str remote_batch_name: Batch name for remote renders
+    :param str remote_preset_name: Preset name from the Preset library
+    :param str remote_preset_library: Remote render preset library
     :param executor_instance: Movie Pipeline executor instance
-    :param output_dir_override: Movie Pipeline output directory override
-    :param output_filename_override: Movie Pipeline filename format override
+    :param str output_dir_override: Movie Pipeline output directory override
+    :param str output_filename_override: Movie Pipeline filename format override
     :return: MRQ Executor
     """
     # The queue subsystem behaves like a singleton so

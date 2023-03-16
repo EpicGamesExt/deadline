@@ -7,7 +7,8 @@ import sys
 
 # Code paths for documentation
 code_paths = ['../deadline/plugins/UnrealEngine',
-              '../unreal/EpicDeadlineService/Content/Python']
+              '../unreal/EpicDeadlineService/Content/Python',
+              '../unreal/MoviePipelineDeadline/Content/Python']
 
 for path in code_paths:
     path = os.path.abspath(path)

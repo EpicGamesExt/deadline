@@ -9,6 +9,7 @@ Welcome to Unreal Engine Deadline documentation!
 
    source/deadline/overview
    source/unreal/overview
+   source/examples/overview
 
 Indices and tables
 ==================
