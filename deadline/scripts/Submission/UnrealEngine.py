@@ -5,7 +5,7 @@ import sys
 import json
 from System.IO import Path
 
-from Deadline.Scripting import RepositoryUtils, ClientUtils
+from Deadline.Scripting import RepositoryUtils, ClientUtils, FrameUtils
 from DeadlineUI.Controls.Scripting.DeadlineScriptDialog import DeadlineScriptDialog
 
 
@@ -212,24 +212,30 @@ def __main__(*args):
         "DependencyBox", "DependencyControl", "", 9, 1, colSpan=2
     )
 
+    SCRIPT_DIALOG.AddControlToGrid( "FramesLabel", "LabelControl", "Frame List", 10, 0, "The list of frames to render.", False )
+    SCRIPT_DIALOG.AddControlToGrid( "FramesBox", "TextControl", "", 10, 1 )
+
+    SCRIPT_DIALOG.AddControlToGrid( "ChunkSizeLabel", "LabelControl", "Frames Per Task", 11, 0, "This is the number of frames that will be rendered at a time for each job task.", False )
+    SCRIPT_DIALOG.AddRangeControlToGrid( "ChunkSizeBox", "RangeControl", 1, 1, 1000000, 0, 1, 11, 1 )
+
     SCRIPT_DIALOG.AddControlToGrid(
         "OnJobCompleteLabel",
         "LabelControl",
         "On Job Complete",
-        10,
+        12,
         0,
         "If desired, you can automatically archive or delete the job when it completes. ",
         False,
     )
     SCRIPT_DIALOG.AddControlToGrid(
-        "OnJobCompleteBox", "OnJobCompleteControl", "Nothing", 10, 1
+        "OnJobCompleteBox", "OnJobCompleteControl", "Nothing", 12, 1
     )
     SCRIPT_DIALOG.AddSelectionControlToGrid(
         "SubmitSuspendedBox",
         "CheckBoxControl",
         False,
         "Submit Job As Suspended",
-        10,
+        12,
         2,
         "If enabled, the job will submit in the suspended state. This is useful if you don't want the job to start rendering right away. Just resume it from the Monitor when you want it to render. ",
     )
@@ -430,6 +436,11 @@ def _enable_perforce(*args):
 
 def submit_button_pressed(*args):
 
+    frames = SCRIPT_DIALOG.GetValue("FramesBox")
+    if not FrameUtils.FrameRangeValid(frames):
+        SCRIPT_DIALOG.ShowMessageBox(f"Frame range `{frames}` is not valid" "Error")
+        return
+
     # Create job dictionary
     job_info = {
         "Plugin": "UnrealEngine",
@@ -446,8 +457,8 @@ def submit_button_pressed(*args):
         "LimitGroups": SCRIPT_DIALOG.GetValue("LimitGroupBox"),
         "JobDependencies": SCRIPT_DIALOG.GetValue("DependencyBox"),
         "OnJobComplete": SCRIPT_DIALOG.GetValue("OnJobCompleteBox"),
-        "Frames": "0",
-        "ChunkSize": "1",
+        "Frames": frames,
+        "ChunkSize": SCRIPT_DIALOG.GetValue("ChunkSizeBox"),
     }
 
     if bool(SCRIPT_DIALOG.GetValue("IsBlacklistBox")):

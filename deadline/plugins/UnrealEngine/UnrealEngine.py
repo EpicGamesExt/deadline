@@ -297,21 +297,23 @@ class UnrealEnginePlugin(DeadlinePlugin):
 class UnrealEngineManagedProcess(ManagedProcess):
     """
     Process for executing and managing an unreal jobs.
+
     .. note::
-    Although this process can auto start a batch process by
-    executing a script on startup, it is VERY important the command
-    that is executed on startup makes a connection to the Deadline RPC
-    server.
-    This will allow Deadline to know a task is running and will wait
-    until the task is complete before rendering the next one. If this
-    is not done, Deadline will assume something went wrong with the
-    process and fail the job after a few minutes. It is also VERY
-    critical the Deadline process is told when a task is complete, so
-    it can move on to the next one. See the Deadline RPC manager on how
-    this communication system works.
-    The reason for this complexity is, sometimes an unreal project can
-    take several minutes to load, and we only want to bare the cost of
-    that load time once between tasks.
+
+        Although this process can auto start a batch process by
+        executing a script on startup, it is VERY important the command
+        that is executed on startup makes a connection to the Deadline RPC
+        server.
+        This will allow Deadline to know a task is running and will wait
+        until the task is complete before rendering the next one. If this
+        is not done, Deadline will assume something went wrong with the
+        process and fail the job after a few minutes. It is also VERY
+        critical the Deadline process is told when a task is complete, so
+        it can move on to the next one. See the Deadline RPC manager on how
+        this communication system works.
+        The reason for this complexity is, sometimes an unreal project can
+        take several minutes to load, and we only want to bare the cost of
+        that load time once between tasks.
 
     """
 
@@ -601,6 +603,12 @@ class UnrealEngineCmdManagedProcess(ManagedProcess):
         ).HandleCallback += self._handle_progress
 
         # self.AddStdoutHandlerCallback("LogPython: Error:.*").HandleCallback += self._handle_stdout_error
+
+        # Get the current frames for the task
+        current_task_frames = self._deadline_plugin.GetCurrentTask().TaskFrameString
+
+        # Set the frames sting as an environment variable
+        self.SetEnvironmentVariable("CURRENT_RENDER_FRAMES", current_task_frames)
 
     def _handle_stdout_error(self):
         """
