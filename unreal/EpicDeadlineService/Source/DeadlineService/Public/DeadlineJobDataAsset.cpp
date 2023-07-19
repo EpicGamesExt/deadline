@@ -1,7 +1,11 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "DeadlineJobDataAsset.h"
-#include "JsonObjectConverter.h"
+
+#include "DeadlineServiceEditorSettings.h"
+
+#include "Widgets/Layout/SBorder.h"
+#include "Widgets/SBoxPanel.h"
 
 #include UE_INLINE_GENERATED_CPP_BY_NAME(DeadlineJobDataAsset)
 
@@ -9,68 +13,128 @@ DEFINE_LOG_CATEGORY(LogDeadlineDataAsset);
 DEFINE_LOG_CATEGORY(LogDeadlineStruct);
 
 
-/**
- * Returns the Deadline job info preset struct as a Json String
- */
-FString UDeadlineJobPresetLibrary::GetJobInfoPresetJsonString(FString PresetName)
+FDeadlineJobInfoStruct::FDeadlineJobInfoStruct()
 {
-	if (this->DeadlineJobPresets.Contains(PresetName))
-	{
-		FString JobOutputString;
-		if (FJsonObjectConverter::UStructToJsonObjectString(
-				this->DeadlineJobPresets[PresetName].JobInfoPreset,
-				JobOutputString
-				))
-		{
-			/*
-			* This Json Object returns keys as camelCasing instead of PascalCasing as Deadline will expect. A
-			* sanitation system will need to be setup to convert from camel casing to pascal casing
-			*/
-			return JobOutputString;
-		}
-		else
-		{
-			UE_LOG(LogDeadlineStruct, Error, TEXT("UDeadlineJobInfoStruct - Unable to convert properties to Json string."));
-			return "";
-		}
-	}
-	else
-	{
-		UE_LOG(LogDeadlineDataAsset, Error, TEXT("UDeadlineJobPresetLibrary - The preset does not exists in the library."));
-		return "";
-	}
-
+	// Set default values good for most users
+	FString ExecutablePath = FString(FPlatformProcess::ExecutablePath());
+	ExecutablePath.RemoveFromEnd(".exe");
+	ExecutablePath += "-Cmd.exe";
+	
+	PluginInfoPreset.Add("Executable", ExecutablePath);
+	PluginInfoPreset.Add("ProjectFile", FPaths::GetProjectFilePath());
+	PluginInfoPreset.Add("CommandLineArguments","-log");
 }
 
 /**
- * Returns the Deadline plugin info preset struct as a Json String
+ * Returns the Deadline job info preset struct a TMap<FString,FString>
  */
-FString UDeadlineJobPresetLibrary::GetPluginInfoPresetJsonString(FString PresetName)
+TMap<FString, FString> UDeadlineJobPresetLibrary::GetJobInfoAsPythonCompatibleStringMap()
 {
-	if (this->DeadlineJobPresets.Contains(PresetName))
+	TMap<FString, FString> ReturnValue = {{"Plugin", "UnrealEngine"}};
+	FDeadlineJobInfoStruct* JobInfoToUse = &JobInfo;
+	
+	if (UDeadlineServiceEditorSettings* DeadlineServiceSettings = GetMutableDefault<UDeadlineServiceEditorSettings>())
 	{
-		FString JobOutputString;
-		if (FJsonObjectConverter::UStructToJsonObjectString(
-				this->DeadlineJobPresets[PresetName].PluginInfoPreset,
-				JobOutputString
-				))
+		ReturnValue["Plugin"] = DeadlineServiceSettings->PluginName;
+
+		if (DeadlineServiceSettings->GetPresetOverrideSettings()->bShouldOverridePresetProperties)
 		{
-			/*
-			* This Json Object returns keys as camelCasing instead of PascalCasing as Deadline will expect. A
-			* sanitation system will need to be setup to convert from camel casing to pascal casing
-			*/
-			return JobOutputString;
+			JobInfoToUse = &DeadlineServiceSettings->GetPresetOverrideSettings()->PresetOverrides;
+		}
+	}
+	
+	for (TFieldIterator<FProperty> PropIt(FDeadlineJobInfoStruct::StaticStruct()); PropIt; ++PropIt)
+	{
+		const FProperty* Property = *PropIt;
+		if (!Property)
+		{
+			continue;
+		}
+		
+		FName PropertyName = Property->GetFName();
+		
+		// Custom Handlers for specific properties prioritizing UX
+		if (PropertyName.IsEqual("bSubmitJobAsSuspended"))
+		{
+			ReturnValue.Add("InitialStatus", JobInfoToUse->bSubmitJobAsSuspended ? "Suspended" : "Active");
+		}
+		else if (PropertyName.IsEqual("bMachineListIsADenyList"))
+		{
+			ReturnValue.Add(JobInfoToUse->bMachineListIsADenyList ? "Denylist" : "Allowlist", JobInfoToUse->MachineList);
+		}
+		else if (PropertyName.IsEqual("PreJobScript"))
+		{
+			ReturnValue.Add(PropertyName.ToString(), JobInfoToUse->PreJobScript.FilePath);
+		}
+		else if (PropertyName.IsEqual("PostJobScript"))
+		{
+			ReturnValue.Add(PropertyName.ToString(), JobInfoToUse->PostJobScript.FilePath);
+		}
+		else if (PropertyName.IsEqual("PreTaskScript"))
+		{
+			ReturnValue.Add(PropertyName.ToString(), JobInfoToUse->PreTaskScript.FilePath);
+		}
+		else if (PropertyName.IsEqual("PostTaskScript"))
+		{
+			ReturnValue.Add(PropertyName.ToString(), JobInfoToUse->PostTaskScript.FilePath);
+		}
+		else if (PropertyName.IsEqual("MachineList") || PropertyName.IsEqual("PluginInfoPreset"))
+		{
+			// MachineList is handled above, PluginInfoPreset is handled in a separate function
+			continue;
+		}
+		else if (const FMapProperty* MapProperty = CastField<FMapProperty>(Property))
+		{
+			// Custom handler for Maps
+			const void* MapValuePtr = MapProperty->ContainerPtrToValuePtr<void>(JobInfoToUse);
+			FScriptMapHelper MapHelper(MapProperty, MapValuePtr);
+			for (int32 MapSparseIndex = 0; MapSparseIndex < MapHelper.GetMaxIndex(); ++MapSparseIndex)
+			{
+				if (MapHelper.IsValidIndex(MapSparseIndex))
+				{
+					const uint8* MapKeyData = MapHelper.GetKeyPtr(MapSparseIndex);
+					const uint8* MapValueData = MapHelper.GetValuePtr(MapSparseIndex);
+
+					FString KeyDataAsString;
+					MapHelper.GetKeyProperty()->ExportText_Direct(KeyDataAsString, MapKeyData, MapKeyData, nullptr, PPF_None);
+					FString ValueDataAsString;
+					MapHelper.GetValueProperty()->ExportText_Direct(ValueDataAsString, MapValueData, MapValueData, nullptr, PPF_None);
+
+					FString PropertyNameAsString = FString::Printf(TEXT("%s%d"), *PropertyName.ToString(), MapSparseIndex);
+					FString PropertyValueAsString = FString::Printf(TEXT("%s=%s"), *KeyDataAsString, *ValueDataAsString);
+					ReturnValue.Add(PropertyNameAsString, PropertyValueAsString);
+					UE_LOG(LogTemp, Warning, TEXT("%s: %s"), *PropertyNameAsString, *PropertyValueAsString);
+				}
+			}
 		}
 		else
 		{
-			UE_LOG(LogDeadlineStruct, Error, TEXT("UDeadlinePluginInfoStruct - Unable to convert properties to Json string."));
-			return "";
+			const void* ValuePtr = Property->ContainerPtrToValuePtr<void>(JobInfoToUse);
+			FString PropertyNameAsString = PropertyName.ToString();
+			FString PropertyValueAsString;
+			Property->ExportText_Direct(PropertyValueAsString, ValuePtr, ValuePtr, nullptr, PPF_None);
+
+			if (PropertyValueAsString.TrimStartAndEnd().IsEmpty())
+			{
+				continue;
+			}
+
+			// Sanitize bool
+			if (Property->IsA(FBoolProperty::StaticClass()))
+			{
+				PropertyNameAsString.RemoveFromStart(TEXT("b"), ESearchCase::CaseSensitive);
+				PropertyValueAsString = PropertyValueAsString.ToLower();
+			}
+	
+			ReturnValue.Add(PropertyNameAsString, PropertyValueAsString);
+			UE_LOG(LogTemp, Warning, TEXT("%s: %s"), *PropertyNameAsString, *PropertyValueAsString);
 		}
-		
 	}
-	else
-	{
-		UE_LOG(LogDeadlineDataAsset, Error, TEXT("UDeadlineJobPresetLibrary - The preset does not exists in the library."));
-		return "";
-	}
+
+	return ReturnValue;
+}
+
+TMap<FString, FString> UDeadlineJobPresetLibrary::GetPluginInfo()
+{
+	return JobInfo.PluginInfoPreset;
 }
