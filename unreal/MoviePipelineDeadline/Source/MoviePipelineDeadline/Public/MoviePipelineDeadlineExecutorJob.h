@@ -32,15 +32,15 @@ public:
 	 * Skips any property not 
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DeadlineService")
-	FDeadlineJobPresetStruct GetDeadlineJobInfoStructWithOverridesIfApplicable() const;
+	FDeadlineJobPresetStruct GetDeadlineJobPresetStructWithOverrides() const;
 
 	/** `Batch Name` groups similar jobs together in the Deadline Monitor UI. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")
 	FString BatchName;
 
-	/* Deadline Preset Library. */
+	/* Deadline Job Preset. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Deadline")
-	TObjectPtr<UDeadlineJobPreset> PresetLibrary;
+	TObjectPtr<UDeadlineJobPreset> JobPreset;
 
 	/* Output directory override on Deadline. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")

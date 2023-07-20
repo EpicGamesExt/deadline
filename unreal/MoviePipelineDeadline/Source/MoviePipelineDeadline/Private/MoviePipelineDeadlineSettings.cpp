@@ -21,6 +21,6 @@ UMoviePipelineDeadlineSettings::UMoviePipelineDeadlineSettings()
 			continue;
 		}
 		
-		JobInfoPropertiesToHideInMovieRenderQueue.Add(*Property->GetPathName());
+		JobPresetPropertiesToHideInMovieRenderQueue.Add(*Property->GetPathName());
 	}
 }

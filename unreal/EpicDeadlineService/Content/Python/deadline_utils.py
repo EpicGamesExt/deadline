@@ -140,24 +140,33 @@ def format_plugin_info_json_string(json_string):
     return plugin_info
 
 
-def get_deadline_info_from_preset(job_preset):
+def get_deadline_info_from_preset(job_preset=None, job_preset_struct=None):
     """
     This method returns the job info and plugin info from a deadline preset
-    :param unreal.DeadlineJobPresetLibrary job_preset:  Deadline preset asset
+    :param unreal.DeadlineJobPreset job_preset:  Deadline preset asset
+    :param unreal.DeadlineJobPresetStruct job_preset_struct: The job info and plugin info in the job preset
     :return: Returns a tuple with the job info and plugin info dictionary
     :rtype: Tuple
     """
+
     job_info = {}
     plugin_info = {}
+    preset_struct = None
 
     # TODO: Make sure the preset library is a loaded asset
     if job_preset is not None:
 
+        preset_struct = job_preset.job_preset_struct
+
+    if job_preset_struct is not None:
+        preset_struct = job_preset_struct
+
+    if preset_struct:
         # Get the Job Info and plugin Info
         try:
-            job_info = dict(unreal.DeadlineServiceEditorHelpers.get_deadline_job_info(job_preset.job_preset_struct))
+            job_info = dict(unreal.DeadlineServiceEditorHelpers.get_deadline_job_info(preset_struct))
 
-            plugin_info = dict(unreal.DeadlineServiceEditorHelpers.get_deadline_plugin_info(job_preset.job_preset_struct))
+            plugin_info = dict(unreal.DeadlineServiceEditorHelpers.get_deadline_plugin_info(preset_struct))
 
         # Fail the submission if any errors occur
         except Exception as err:

@@ -52,8 +52,7 @@ def render_current_sequence(
     is_remote=False,
     is_cmdline=False,
     remote_batch_name=None,
-    remote_preset_name=None,
-    remote_preset_library=None,
+    remote_job_preset=None,
     executor_instance=None,
     output_dir_override=None,
     output_filename_override=None
@@ -69,8 +68,7 @@ def render_current_sequence(
     :param bool is_remote: Flag to determine if the job should be executed remotely
     :param bool is_cmdline: Flag to determine if the render was executed via commandline
     :param str remote_batch_name: Remote render batch name
-    :param str remote_preset_name: Preset library preset name
-    :param str remote_preset_library:  Preset Library
+    :param str remote_job_preset:  deadline job Preset Library
     :param executor_instance: Movie Pipeline executor Instance
     :param str output_dir_override: Movie Pipeline output directory override
     :param str output_filename_override: Movie Pipeline filename format override
@@ -142,8 +140,7 @@ def render_current_sequence(
         executor = render_jobs(
             is_remote,
             remote_batch_name=remote_batch_name,
-            remote_preset_name=remote_preset_name,
-            remote_preset_library=remote_preset_library,
+            remote_job_preset=remote_job_preset,
             is_cmdline=is_cmdline,
             executor_instance=executor_instance,
             output_dir_override=output_dir_override,
@@ -174,8 +171,7 @@ def _process_args(args):
         is_remote=args.remote,
         is_cmdline=args.cmdline,
         remote_batch_name=args.batch_name,
-        remote_preset_name=args.preset_name,
-        remote_preset_library=args.preset_library,
+        remote_job_preset=args.deadline_job_preset,
         output_dir_override=args.output_override,
         output_filename_override=args.filename_override
     )

@@ -42,7 +42,7 @@ class DeadlineJob:
             self.plugin_info = plugin_info
 
         if job_preset:
-            self.job_info, self.plugin_info = get_deadline_info_from_preset(job_preset)
+            self.job_info, self.plugin_info = get_deadline_info_from_preset(job_preset=job_preset)
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.job_name}, {self.job_id})"

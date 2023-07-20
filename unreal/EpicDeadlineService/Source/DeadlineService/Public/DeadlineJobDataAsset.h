@@ -59,7 +59,7 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 
 	/** Specifies the time, in seconds, a Worker has to render a task before it times out. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options", meta = (ClampMin = 0))
-	int32 TaskTimeoutSeconds;
+	int32 TaskTimeoutSeconds = 0;
 	
 	/**
 	 * If true, a Worker will automatically figure out if it has been rendering too long based on some
