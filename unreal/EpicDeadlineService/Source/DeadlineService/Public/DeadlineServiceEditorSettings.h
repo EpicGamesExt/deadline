@@ -14,8 +14,6 @@ class DEADLINESERVICE_API UDeadlineServiceEditorSettings : public UDeveloperSett
 	GENERATED_BODY()
 
 public:
-
-	UDeadlineServiceEditorSettings();
 	
 	/** Gets the settings container name for the settings, either Project or Editor */
 	virtual FName GetContainerName() const override { return FName("Project"); }
@@ -41,25 +39,5 @@ public:
 	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")
 	FString PluginName = "UnrealEngine";
-
-	void AddPropertyToHideInMovieRenderQueue(const FName& InPropertyPath)
-	{
-		PropertiesToHideInMovieRenderQueue.Add(InPropertyPath);
-	}
-
-	void RemovePropertyToHideInMovieRenderQueue(const FName& InPropertyPath)
-	{
-		PropertiesToHideInMovieRenderQueue.Remove(InPropertyPath);
-	}
-
-	bool GetIsPropertyHiddenInMovieRenderQueue(const FName& InPropertyPath) const
-	{
-		return PropertiesToHideInMovieRenderQueue.Contains(InPropertyPath);
-	}
-
-protected:
-
-	UPROPERTY(config)
-	TArray<FName> PropertiesToHideInMovieRenderQueue;
 
 };

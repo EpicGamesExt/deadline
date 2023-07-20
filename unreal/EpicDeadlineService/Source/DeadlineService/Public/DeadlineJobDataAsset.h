@@ -5,7 +5,7 @@
 #include "DeadlineJobDataAsset.generated.h"
 
 // Forward declarations
-class UDeadlineJobPresetLibrary;
+class UDeadlineJobPreset;
 class UScriptCategories;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogDeadlineDataAsset, Log, All);
@@ -15,7 +15,7 @@ DECLARE_LOG_CATEGORY_EXTERN(LogDeadlineStruct, Log, All);
  * Deadline Job Info Struct
  */
 USTRUCT(BlueprintType)
-struct DEADLINESERVICE_API FDeadlineJobInfoStruct
+struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 {
 	/**
 	 * If any of these variable names must change for any reason, be sure to update the string literals in the source as well
@@ -28,7 +28,7 @@ struct DEADLINESERVICE_API FDeadlineJobInfoStruct
 	FString Name = "Untitled";
 
 	/** Specifies a comment for the job. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Description")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Description", meta = (MultiLine = true))
 	FString Comment;
 
 	/**
@@ -199,16 +199,16 @@ struct DEADLINESERVICE_API FDeadlineJobInfoStruct
  * Deadline Job Info
  */
 UCLASS(BlueprintType)
-class DEADLINESERVICE_API UDeadlineJobPresetLibrary : public UDataAsset
+class DEADLINESERVICE_API UDeadlineJobPreset : public UDataAsset
 {
 	GENERATED_BODY()
 public:
 
-	UDeadlineJobPresetLibrary();
+	UDeadlineJobPreset();
 
 	/** Job info struct */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Info")
-	FDeadlineJobInfoStruct JobInfo;
+	FDeadlineJobPresetStruct JobInfo;
 
 	UFUNCTION()
 	static TArray<FString> GetOnJobCompleteOptions()

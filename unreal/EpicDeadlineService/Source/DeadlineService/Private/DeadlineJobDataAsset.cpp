@@ -13,7 +13,7 @@ DEFINE_LOG_CATEGORY(LogDeadlineDataAsset);
 DEFINE_LOG_CATEGORY(LogDeadlineStruct);
 
 
-UDeadlineJobPresetLibrary::UDeadlineJobPresetLibrary()
+UDeadlineJobPreset::UDeadlineJobPreset()
 {
 	// Set default values good for most users
 	FString ExecutablePath = FString(FPlatformProcess::ExecutablePath());

@@ -5,6 +5,7 @@
 #include "IPropertyTypeCustomization.h"
 
 class IDetailPropertyRow;
+class UMoviePipelineDeadlineExecutorJob;
 
 /**
  * This customization lives in the MoviePipelineDeadline module because in order to get
@@ -12,7 +13,7 @@ class IDetailPropertyRow;
  * UMoviePipelineDeadlineExecutorJob class. We need the assigned preset for the custom
  * ResetToDefault behaviour.
  */
-class FDeadlineJobPresetLibraryCustomization : public IPropertyTypeCustomization
+class FDeadlineJobPresetCustomization : public IPropertyTypeCustomization
 {
 public:
 
@@ -24,11 +25,12 @@ public:
 	/** End IPropertyTypeCustomization interface */
 
 	static bool IsPropertyHiddenInMovieRenderQueue(const FName& InPropertyPath);
+	static bool IsPropertyRowEnabledInMovieRenderJob(const FName& InPropertyPath, UMoviePipelineDeadlineExecutorJob* Job);
 	
 protected:
-	void CustomizeStructChildrenInAssetDetails(IDetailPropertyRow& PropertyRow);
-	void CustomizeStructChildrenInMovieRenderQueue(IDetailPropertyRow& PropertyRow, TWeakObjectPtr<UObject> OuterObject);
+	void CustomizeStructChildrenInAssetDetails(IDetailPropertyRow& PropertyRow) const;
+	void CustomizeStructChildrenInMovieRenderQueue(IDetailPropertyRow& PropertyRow, UMoviePipelineDeadlineExecutorJob* Job) const;
 
-	bool IsResetToDefaultVisibleOverride(TSharedPtr<IPropertyHandle> PropertyHandle, TWeakObjectPtr<UObject> OuterObject);
-	void ResetToDefaultOverride(TSharedPtr<IPropertyHandle> PropertyHandle, TWeakObjectPtr<UObject> OuterObject);
+	static bool IsResetToDefaultVisibleOverride(TSharedPtr<IPropertyHandle> PropertyHandle, UMoviePipelineDeadlineExecutorJob* Job);
+	static void ResetToDefaultOverride(TSharedPtr<IPropertyHandle> PropertyHandle, UMoviePipelineDeadlineExecutorJob* Job);
 };

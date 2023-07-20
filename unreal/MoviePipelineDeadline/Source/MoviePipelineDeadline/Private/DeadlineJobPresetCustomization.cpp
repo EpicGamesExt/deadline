@@ -1,9 +1,9 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "DeadlineJobPresetLibraryCustomization.h"
+#include "DeadlineJobPresetCustomization.h"
 
-#include "DeadlineServiceEditorSettings.h"
-#include "MoviePipelineDeadline.h"
+#include "MoviePipelineDeadlineExecutorJob.h"
+#include "MoviePipelineDeadlineSettings.h"
 
 #include "DetailWidgetRow.h"
 #include "IDetailChildrenBuilder.h"
@@ -43,8 +43,8 @@ public:
 				.ToolTipText(NSLOCTEXT("FDeadlineJobPresetLibraryCustomization", "VisibleInMoveRenderQueueToolTip", "If true this property will be visible for overriding from Movie Render Queue."))
 				.OnCheckStateChanged_Lambda([InPropertyPath](ECheckBoxState CheckType)
 				{
-					if (UDeadlineServiceEditorSettings* Settings =
-						GetMutableDefault<UDeadlineServiceEditorSettings>())
+					if (UMoviePipelineDeadlineSettings* Settings =
+						GetMutableDefault<UMoviePipelineDeadlineSettings>())
 					{
 						if (CheckType == ECheckBoxState::Unchecked)
 						{
@@ -61,7 +61,7 @@ public:
 				})
 				.IsChecked_Lambda([InPropertyPath]()
 				{
-					return FDeadlineJobPresetLibraryCustomization::IsPropertyHiddenInMovieRenderQueue(InPropertyPath)
+					return FDeadlineJobPresetCustomization::IsPropertyHiddenInMovieRenderQueue(InPropertyPath)
 								? ECheckBoxState::Unchecked
 								: ECheckBoxState::Checked;
 				})
@@ -72,12 +72,12 @@ public:
 	TSharedPtr<SCheckBox> CheckBoxPtr;
 };
 
-TSharedRef<IPropertyTypeCustomization> FDeadlineJobPresetLibraryCustomization::MakeInstance()
+TSharedRef<IPropertyTypeCustomization> FDeadlineJobPresetCustomization::MakeInstance()
 {
-	return MakeShared<FDeadlineJobPresetLibraryCustomization>();
+	return MakeShared<FDeadlineJobPresetCustomization>();
 }
 
-void FDeadlineJobPresetLibraryCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> StructHandle,
+void FDeadlineJobPresetCustomization::CustomizeChildren(TSharedRef<IPropertyHandle> StructHandle,
 	IDetailChildrenBuilder& ChildBuilder, IPropertyTypeCustomizationUtils& CustomizationUtils)
 {
 	TArray<UObject*> OuterObjects;
@@ -93,13 +93,14 @@ void FDeadlineJobPresetLibraryCustomization::CustomizeChildren(TSharedRef<IPrope
 	{
 		return;
 	}
-	const bool bIsOverrideType = OuterObject->IsA(UMoviePipelineDeadlineExecutorJob::StaticClass());
+	
+	UMoviePipelineDeadlineExecutorJob* OuterJob = Cast<UMoviePipelineDeadlineExecutorJob>(OuterObject);
 
 	TMap<FName, IDetailGroup*> CreatedCategories;
 
 	const FName StructName(StructHandle->GetProperty()->GetFName());
 
-	if (bIsOverrideType)
+	if (OuterJob)
 	{
 		IDetailGroup& BaseCategoryGroup = ChildBuilder.AddGroup(StructName, StructHandle->GetPropertyDisplayName());
 		CreatedCategories.Add(StructName, &BaseCategoryGroup);
@@ -115,7 +116,7 @@ void FDeadlineJobPresetLibraryCustomization::CustomizeChildren(TSharedRef<IPrope
 		const TSharedRef<IPropertyHandle> ChildHandle = StructHandle->GetChildHandle(ChildIndex).ToSharedRef();
 
 		// Skip properties that are hidden so we don't end up creating empty categories in the job details
-		if (bIsOverrideType && IsPropertyHiddenInMovieRenderQueue(*ChildHandle->GetProperty()->GetPathName()))
+		if (OuterJob && IsPropertyHiddenInMovieRenderQueue(*ChildHandle->GetProperty()->GetPathName()))
 		{
 			continue;
 		}
@@ -131,7 +132,7 @@ void FDeadlineJobPresetLibraryCustomization::CustomizeChildren(TSharedRef<IPrope
 			}
 			else
 			{
-				if (bIsOverrideType)
+				if (OuterJob)
 				{
 					IDetailGroup& NewGroup = CreatedCategories.FindChecked(StructName)->AddGroup(PropertyCategoryName, FText::FromName(PropertyCategoryName), true);
 					GroupToUse = CreatedCategories.Add(PropertyCategoryName, &NewGroup);
@@ -147,9 +148,9 @@ void FDeadlineJobPresetLibraryCustomization::CustomizeChildren(TSharedRef<IPrope
 		
 		IDetailPropertyRow& PropertyRow = GroupToUse->AddPropertyRow(ChildHandle);
 
-		if (bIsOverrideType)
+		if (OuterJob)
 		{
-			CustomizeStructChildrenInMovieRenderQueue(PropertyRow, OuterObject);
+			CustomizeStructChildrenInMovieRenderQueue(PropertyRow, OuterJob);
 		}
 		else
 		{
@@ -167,7 +168,7 @@ void FDeadlineJobPresetLibraryCustomization::CustomizeChildren(TSharedRef<IPrope
 	}
 }
 
-void FDeadlineJobPresetLibraryCustomization::CustomizeStructChildrenInAssetDetails(IDetailPropertyRow& PropertyRow)
+void FDeadlineJobPresetCustomization::CustomizeStructChildrenInAssetDetails(IDetailPropertyRow& PropertyRow) const
 {
 	TSharedPtr<SWidget> NameWidget;
 	TSharedPtr<SWidget> ValueWidget;
@@ -195,25 +196,69 @@ void FDeadlineJobPresetLibraryCustomization::CustomizeStructChildrenInAssetDetai
 	];
 }
 
-void FDeadlineJobPresetLibraryCustomization::CustomizeStructChildrenInMovieRenderQueue(IDetailPropertyRow& PropertyRow, TWeakObjectPtr<UObject> OuterObject)
+void FDeadlineJobPresetCustomization::CustomizeStructChildrenInMovieRenderQueue(
+	IDetailPropertyRow& PropertyRow, UMoviePipelineDeadlineExecutorJob* Job) const
 {	
 	TSharedPtr<SWidget> NameWidget;
 	TSharedPtr<SWidget> ValueWidget;
 	FDetailWidgetRow Row;
 	PropertyRow.GetDefaultWidgets(NameWidget, ValueWidget, Row);
 	
+	const FName PropertyPath = *PropertyRow.GetPropertyHandle()->GetProperty()->GetPathName();
+
+	ValueWidget->SetEnabled(TAttribute<bool>::CreateLambda([Job, PropertyPath]()
+			{
+				if (!Job)
+				{
+					// Return true so by default all properties are enabled for overrides 
+					return true;
+				}
+				
+				return Job->IsPropertyRowEnabledInMovieRenderJob(PropertyPath); 
+			}));
+	
 	PropertyRow
 	.OverrideResetToDefault(
 		FResetToDefaultOverride::Create(
-			FIsResetToDefaultVisible::CreateSP(this, &FDeadlineJobPresetLibraryCustomization::IsResetToDefaultVisibleOverride, OuterObject),
-			FResetToDefaultHandler::CreateSP(this, &FDeadlineJobPresetLibraryCustomization::ResetToDefaultOverride, OuterObject)))
+			FIsResetToDefaultVisible::CreateStatic( &FDeadlineJobPresetCustomization::IsResetToDefaultVisibleOverride, Job),
+			FResetToDefaultHandler::CreateStatic(&FDeadlineJobPresetCustomization::ResetToDefaultOverride, Job)))
 	.CustomWidget(true)
 	.NameContent()
 	.MinDesiredWidth(Row.NameWidget.MinWidth)
 	.MaxDesiredWidth(Row.NameWidget.MaxWidth)
 	.HAlign(HAlign_Fill)
 	[
-		NameWidget.ToSharedRef()
+		SNew(SHorizontalBox)
+		+ SHorizontalBox::Slot()
+		.AutoWidth()
+		.Padding(4, 0)
+		[
+			SNew(SCheckBox)
+			.IsChecked_Lambda([Job, PropertyPath]()
+			{
+				if (!Job)
+				{
+					// Return Checked so by default all properties are enabled for overrides 
+					return ECheckBoxState::Checked;
+				}
+				
+				return Job->IsPropertyRowEnabledInMovieRenderJob(PropertyPath) ? ECheckBoxState::Checked : ECheckBoxState::Unchecked; 
+			})
+			.OnCheckStateChanged_Lambda([Job, PropertyPath](const ECheckBoxState NewState)
+			{
+				if (!Job)
+				{
+					return;
+				}
+				
+				return Job->SetPropertyRowEnabledInMovieRenderJob(
+					PropertyPath, NewState == ECheckBoxState::Checked ? true : false); 
+			})
+		]
+		+ SHorizontalBox::Slot()
+		[
+			NameWidget.ToSharedRef()
+		]
 	]
 	.ValueContent()
 	.MinDesiredWidth(Row.ValueWidget.MinWidth)
@@ -224,29 +269,29 @@ void FDeadlineJobPresetLibraryCustomization::CustomizeStructChildrenInMovieRende
 	];
 }
 
-bool FDeadlineJobPresetLibraryCustomization::IsPropertyHiddenInMovieRenderQueue(const FName& InPropertyPath)
+bool FDeadlineJobPresetCustomization::IsPropertyHiddenInMovieRenderQueue(const FName& InPropertyPath)
 {
-	if (const UDeadlineServiceEditorSettings* Settings = GetDefault<UDeadlineServiceEditorSettings>())
+	if (const UMoviePipelineDeadlineSettings* Settings = GetDefault<UMoviePipelineDeadlineSettings>())
 	{
 		return Settings->GetIsPropertyHiddenInMovieRenderQueue(InPropertyPath);
 	}
 	return false;
 }
 
-bool GetPresetValueAsString(const FProperty* PropertyPtr, TWeakObjectPtr<UObject> OuterObject, FString& OutFormattedValue)
+bool FDeadlineJobPresetCustomization::IsPropertyRowEnabledInMovieRenderJob(const FName& InPropertyPath,
+	UMoviePipelineDeadlineExecutorJob* Job)
 {
-	if (!PropertyPtr || !OuterObject.IsValid())
+	return Job && Job->IsPropertyRowEnabledInMovieRenderJob(InPropertyPath); 
+}
+
+bool GetPresetValueAsString(const FProperty* PropertyPtr, UMoviePipelineDeadlineExecutorJob* Job, FString& OutFormattedValue)
+{
+	if (!PropertyPtr || !Job)
 	{
 		return false;
 	}
 
-	const UMoviePipelineDeadlineExecutorJob* DeadlineExecutorJob = Cast<UMoviePipelineDeadlineExecutorJob>(OuterObject.Get());
-	if (!DeadlineExecutorJob)
-	{
-		return false;
-	}
-
-	UDeadlineJobPresetLibrary* SelectedPresetLibrary = DeadlineExecutorJob->PresetLibrary;
+	UDeadlineJobPreset* SelectedPresetLibrary = Job->PresetLibrary;
 	if (!SelectedPresetLibrary)
 	{
 		return false;
@@ -257,15 +302,15 @@ bool GetPresetValueAsString(const FProperty* PropertyPtr, TWeakObjectPtr<UObject
 	return true;
 }
 
-bool FDeadlineJobPresetLibraryCustomization::IsResetToDefaultVisibleOverride(
-	TSharedPtr<IPropertyHandle> PropertyHandle, TWeakObjectPtr<UObject> OuterObject)
+bool FDeadlineJobPresetCustomization::IsResetToDefaultVisibleOverride(
+	TSharedPtr<IPropertyHandle> PropertyHandle, UMoviePipelineDeadlineExecutorJob* Job)
 {
-	if (!PropertyHandle || !OuterObject.IsValid())
+	if (!PropertyHandle || !Job)
 	{
 		return true;
 	}
 	
-	if (FString DefaultValueAsString; GetPresetValueAsString(PropertyHandle->GetProperty(), OuterObject, DefaultValueAsString))
+	if (FString DefaultValueAsString; GetPresetValueAsString(PropertyHandle->GetProperty(), Job, DefaultValueAsString))
 	{
 		FString CurrentValueAsString;
 		PropertyHandle->GetValueAsFormattedString(CurrentValueAsString);
@@ -277,15 +322,15 @@ bool FDeadlineJobPresetLibraryCustomization::IsResetToDefaultVisibleOverride(
 	return true;
 }
 
-void FDeadlineJobPresetLibraryCustomization::ResetToDefaultOverride(
-	TSharedPtr<IPropertyHandle> PropertyHandle, TWeakObjectPtr<UObject> OuterObject)
+void FDeadlineJobPresetCustomization::ResetToDefaultOverride(
+	TSharedPtr<IPropertyHandle> PropertyHandle, UMoviePipelineDeadlineExecutorJob* Job)
 {
-	if (!PropertyHandle || !OuterObject.IsValid())
+	if (!PropertyHandle || !Job)
 	{
 		return;
 	}
 	
-	if (FString DefaultValueAsString; GetPresetValueAsString(PropertyHandle->GetProperty(), OuterObject, DefaultValueAsString))
+	if (FString DefaultValueAsString; GetPresetValueAsString(PropertyHandle->GetProperty(), Job, DefaultValueAsString))
 	{
 		PropertyHandle->SetValueFromFormattedString(DefaultValueAsString);
 	}

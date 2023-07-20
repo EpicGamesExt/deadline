@@ -20,7 +20,7 @@ class DEADLINESERVICE_API UDeadlineServiceEditorHelpers : public UBlueprintFunct
 	 * Excludes "PluginInfo". Use GetPluginInfo to collect this separately.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DeadlineService")
-	static TMap<FString, FString> GetDeadlineJobInfoAsStringMap(const FDeadlineJobInfoStruct& JobInfo)
+	static TMap<FString, FString> GetDeadlineJobInfo(const FDeadlineJobPresetStruct& JobInfo)
 	{
 		TMap<FString, FString> ReturnValue = {{"Plugin", "UnrealEngine"}};
 
@@ -29,7 +29,7 @@ class DEADLINESERVICE_API UDeadlineServiceEditorHelpers : public UBlueprintFunct
 			ReturnValue["Plugin"] = Settings->PluginName;
 		}
 		
-		for (TFieldIterator<FProperty> PropIt(FDeadlineJobInfoStruct::StaticStruct()); PropIt; ++PropIt)
+		for (TFieldIterator<FProperty> PropIt(FDeadlineJobPresetStruct::StaticStruct()); PropIt; ++PropIt)
 		{
 			const FProperty* Property = *PropIt;
 			if (!Property)
@@ -121,7 +121,7 @@ class DEADLINESERVICE_API UDeadlineServiceEditorHelpers : public UBlueprintFunct
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "DeadlineService")
-	static TMap<FString, FString> GetDeadlinePluginInfo(const FDeadlineJobInfoStruct& JobInfo)
+	static TMap<FString, FString> GetDeadlinePluginInfo(const FDeadlineJobPresetStruct& JobInfo)
 	{
 		return JobInfo.PluginInfoPreset;
 	}
