@@ -297,7 +297,7 @@ bool GetPresetValueAsString(const FProperty* PropertyPtr, UMoviePipelineDeadline
 		return false;
 	}
 
-	const void* ValuePtr = PropertyPtr->ContainerPtrToValuePtr<void>(&SelectedPresetLibrary->JobInfo);
+	const void* ValuePtr = PropertyPtr->ContainerPtrToValuePtr<void>(&SelectedPresetLibrary->JobPresetStruct);
 	PropertyPtr->ExportText_Direct(OutFormattedValue, ValuePtr, ValuePtr, nullptr, PPF_None);
 	return true;
 }

@@ -11,11 +11,7 @@ import logging
 import unreal
 
 # Internal
-from deadline_utils import (
-    merge_dictionaries,
-    format_job_info_json_string,
-    format_plugin_info_json_string
-)
+from deadline_utils import merge_dictionaries, get_deadline_info_from_preset
 
 from deadline_enums import DeadlineJobStatus
 
@@ -28,7 +24,7 @@ class DeadlineJob:
     # ------------------------------------------------------------------------------------------------------------------
     # Magic Methods
 
-    def __init__(self, job_info=None, plugin_info=None):
+    def __init__(self, job_info=None, plugin_info=None, job_preset: unreal.DeadlineJobPreset=None):
         """ Constructor """
         self._job_id = None
         self._job_info = {}
@@ -44,6 +40,9 @@ class DeadlineJob:
         if job_info and plugin_info:
             self.job_info = job_info
             self.plugin_info = plugin_info
+
+        if job_preset:
+            self.job_info, self.plugin_info = get_deadline_info_from_preset(job_preset)
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.job_name}, {self.job_id})"
@@ -61,16 +60,13 @@ class DeadlineJob:
         return self._job_info
 
     @job_info.setter
-    def job_info(self, value):
+    def job_info(self, value: dict):
         """
         Sets the Deadline Job Info
-        :param value:  Value to set on plugin info. This can either be a dictionary or json string
+        :param value:  Value to set on the job info.
         """
-        if not isinstance(value, (str, dict)):
-            raise ValueError(f"Expected `dict` or `str` found {type(value)}")
-
-        if isinstance(value, str):
-            value = format_job_info_json_string(value)
+        if not isinstance(value, dict):
+            raise ValueError(f"Expected `dict` found {type(value)}")
 
         self._job_info = merge_dictionaries(self.job_info, value)
 
@@ -91,16 +87,13 @@ class DeadlineJob:
         return self._plugin_info
 
     @plugin_info.setter
-    def plugin_info(self, value):
+    def plugin_info(self, value: dict):
         """
         Sets the Deadline Plugin Info
-        :param value: Value to set on plugin info. This can either be a dictionary or json string
+        :param value: Value to set on plugin info.
         """
-        if not isinstance(value, (str, dict)):
-            raise ValueError(f"Expected `dict` or `str` found {type(value)}")
-
-        if isinstance(value, str):
-            value = format_plugin_info_json_string(value)
+        if not isinstance(value, dict):
+            raise ValueError(f"Expected `dict` found {type(value)}")
 
         self._plugin_info = merge_dictionaries(self.plugin_info, value)
 

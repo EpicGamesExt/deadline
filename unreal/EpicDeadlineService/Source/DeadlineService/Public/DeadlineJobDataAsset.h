@@ -135,7 +135,7 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 	 * Note:
 	 * This location is expected to already be path mapped on the farm else it will fail.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options", meta = (FilePathFilter = "Python files (*.py)|*.py|(*.pyc)|*.pyc"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options", meta = (FilePathFilter = "Python files (*.py)|*.py"))
 	FFilePath PreJobScript;
 
 	/**
@@ -143,7 +143,7 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 	 * Note:
 	 * This location is expected to already be path mapped on the farm else it will fail.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options", meta = (FilePathFilter = "Python files (*.py)|*.py|(*.pyc)|*.pyc"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options", meta = (FilePathFilter = "Python files (*.py)|*.py"))
 	FFilePath PostJobScript;
 
 	/**
@@ -151,7 +151,7 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 	 * Note:
 	 * This location is expected to already be path mapped on the farm else it will fail.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options", meta = (FilePathFilter = "Python files (*.py)|*.py|(*.pyc)|*.pyc"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options", meta = (FilePathFilter = "Python files (*.py)|*.py"))
 	FFilePath PreTaskScript;
 
 	/**
@@ -159,7 +159,7 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 	 * Note:
 	 * This location is expected to already be path mapped on the farm else it will fail.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options", meta = (FilePathFilter = "Python files (*.py)|*.py|(*.pyc)|*.pyc"))
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options", meta = (FilePathFilter = "Python files (*.py)|*.py"))
 	FFilePath PostTaskScript;
 
 	/** Specifies environment variables to set when the job renders. This is only set in the Deadline environment not the Unreal environment. */
@@ -191,12 +191,12 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 
 	/** Deadline Plugin info key value pair. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Advanced Job Options")
-	TMap<FString, FString> PluginInfoPreset;
+	TMap<FString, FString> PluginInfo;
 };
 
 
 /**
- * Deadline Job Info
+ * Deadline Job Preset
  */
 UCLASS(BlueprintType)
 class DEADLINESERVICE_API UDeadlineJobPreset : public UDataAsset
@@ -206,9 +206,9 @@ public:
 
 	UDeadlineJobPreset();
 
-	/** Job info struct */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Info")
-	FDeadlineJobPresetStruct JobInfo;
+	/** Job preset struct */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Preset")
+	FDeadlineJobPresetStruct JobPresetStruct;
 
 	UFUNCTION()
 	static TArray<FString> GetOnJobCompleteOptions()

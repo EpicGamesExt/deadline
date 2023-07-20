@@ -20,7 +20,7 @@ class DEADLINESERVICE_API UDeadlineServiceEditorHelpers : public UBlueprintFunct
 	 * Excludes "PluginInfo". Use GetPluginInfo to collect this separately.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "DeadlineService")
-	static TMap<FString, FString> GetDeadlineJobInfo(const FDeadlineJobPresetStruct& JobInfo)
+	static TMap<FString, FString> GetDeadlineJobInfo(const FDeadlineJobPresetStruct& JobPresetStruct)
 	{
 		TMap<FString, FString> ReturnValue = {{"Plugin", "UnrealEngine"}};
 
@@ -42,37 +42,37 @@ class DEADLINESERVICE_API UDeadlineServiceEditorHelpers : public UBlueprintFunct
 			// Custom Handlers for specific properties prioritizing UX
 			if (PropertyName.IsEqual("bSubmitJobAsSuspended"))
 			{
-				ReturnValue.Add("InitialStatus", JobInfo.bSubmitJobAsSuspended ? "Suspended" : "Active");
+				ReturnValue.Add("InitialStatus", JobPresetStruct.bSubmitJobAsSuspended ? "Suspended" : "Active");
 			}
 			else if (PropertyName.IsEqual("bMachineListIsADenyList"))
 			{
-				ReturnValue.Add(JobInfo.bMachineListIsADenyList ? "Denylist" : "Allowlist", JobInfo.MachineList);
+				ReturnValue.Add(JobPresetStruct.bMachineListIsADenyList ? "Denylist" : "Allowlist", JobPresetStruct.MachineList);
 			}
 			else if (PropertyName.IsEqual("PreJobScript"))
 			{
-				ReturnValue.Add(PropertyName.ToString(), JobInfo.PreJobScript.FilePath);
+				ReturnValue.Add(PropertyName.ToString(), JobPresetStruct.PreJobScript.FilePath);
 			}
 			else if (PropertyName.IsEqual("PostJobScript"))
 			{
-				ReturnValue.Add(PropertyName.ToString(), JobInfo.PostJobScript.FilePath);
+				ReturnValue.Add(PropertyName.ToString(), JobPresetStruct.PostJobScript.FilePath);
 			}
 			else if (PropertyName.IsEqual("PreTaskScript"))
 			{
-				ReturnValue.Add(PropertyName.ToString(), JobInfo.PreTaskScript.FilePath);
+				ReturnValue.Add(PropertyName.ToString(), JobPresetStruct.PreTaskScript.FilePath);
 			}
 			else if (PropertyName.IsEqual("PostTaskScript"))
 			{
-				ReturnValue.Add(PropertyName.ToString(), JobInfo.PostTaskScript.FilePath);
+				ReturnValue.Add(PropertyName.ToString(), JobPresetStruct.PostTaskScript.FilePath);
 			}
-			else if (PropertyName.IsEqual("MachineList") || PropertyName.IsEqual("PluginInfoPreset"))
+			else if (PropertyName.IsEqual("MachineList") || PropertyName.IsEqual("PluginInfo"))
 			{
-				// MachineList is handled above, PluginInfoPreset is handled in a separate function
+				// MachineList is handled above, PluginInfo is handled in a separate function
 				continue;
 			}
 			else if (const FMapProperty* MapProperty = CastField<FMapProperty>(Property))
 			{
 				// Custom handler for Maps
-				const void* MapValuePtr = MapProperty->ContainerPtrToValuePtr<void>(&JobInfo);
+				const void* MapValuePtr = MapProperty->ContainerPtrToValuePtr<void>(&JobPresetStruct);
 				FScriptMapHelper MapHelper(MapProperty, MapValuePtr);
 				for (int32 MapSparseIndex = 0; MapSparseIndex < MapHelper.GetMaxIndex(); ++MapSparseIndex)
 				{
@@ -86,16 +86,24 @@ class DEADLINESERVICE_API UDeadlineServiceEditorHelpers : public UBlueprintFunct
 						FString ValueDataAsString;
 						MapHelper.GetValueProperty()->ExportText_Direct(ValueDataAsString, MapValueData, MapValueData, nullptr, PPF_None);
 
-						FString PropertyNameAsString = FString::Printf(TEXT("%s%d"), *PropertyName.ToString(), MapSparseIndex);
-						FString PropertyValueAsString = FString::Printf(TEXT("%s=%s"), *KeyDataAsString, *ValueDataAsString);
-						ReturnValue.Add(PropertyNameAsString, PropertyValueAsString);
-						UE_LOG(LogTemp, Warning, TEXT("%s: %s"), *PropertyNameAsString, *PropertyValueAsString);
+						// Custom support for Extra Job Options. These properties are part of the top level Job Info map
+						if (PropertyName.IsEqual("ExtraJobOptions"))
+						{
+							ReturnValue.Add(*KeyDataAsString, *ValueDataAsString);
+						}
+						else
+						{
+							FString PropertyNameAsString = FString::Printf(TEXT("%s%d"), *PropertyName.ToString(), MapSparseIndex);
+							FString PropertyValueAsString = FString::Printf(TEXT("%s=%s"), *KeyDataAsString, *ValueDataAsString);
+							ReturnValue.Add(PropertyNameAsString, PropertyValueAsString);
+						}
+						// UE_LOG(LogTemp, Warning, TEXT("%s: %s"), *PropertyNameAsString, *PropertyValueAsString);
 					}
 				}
 			}
 			else
 			{
-				const void* ValuePtr = Property->ContainerPtrToValuePtr<void>(&JobInfo);
+				const void* ValuePtr = Property->ContainerPtrToValuePtr<void>(&JobPresetStruct);
 				FString PropertyNameAsString = PropertyName.ToString();
 				FString PropertyValueAsString;
 				Property->ExportText_Direct(PropertyValueAsString, ValuePtr, ValuePtr, nullptr, PPF_None);
@@ -113,7 +121,7 @@ class DEADLINESERVICE_API UDeadlineServiceEditorHelpers : public UBlueprintFunct
 				}
 		
 				ReturnValue.Add(PropertyNameAsString, PropertyValueAsString);
-				UE_LOG(LogTemp, Warning, TEXT("%s: %s"), *PropertyNameAsString, *PropertyValueAsString);
+				// UE_LOG(LogTemp, Warning, TEXT("%s: %s"), *PropertyNameAsString, *PropertyValueAsString);
 			}
 		}
 
@@ -121,8 +129,8 @@ class DEADLINESERVICE_API UDeadlineServiceEditorHelpers : public UBlueprintFunct
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "DeadlineService")
-	static TMap<FString, FString> GetDeadlinePluginInfo(const FDeadlineJobPresetStruct& JobInfo)
+	static TMap<FString, FString> GetDeadlinePluginInfo(const FDeadlineJobPresetStruct& JobPresetStruct)
 	{
-		return JobInfo.PluginInfoPreset;
+		return JobPresetStruct.PluginInfo;
 	}
 };

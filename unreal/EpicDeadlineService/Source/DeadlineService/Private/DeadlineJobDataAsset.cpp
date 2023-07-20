@@ -20,7 +20,7 @@ UDeadlineJobPreset::UDeadlineJobPreset()
 	ExecutablePath.RemoveFromEnd(".exe");
 	ExecutablePath += "-Cmd.exe";
 	
-	JobInfo.PluginInfoPreset.Add("Executable", ExecutablePath);
-	JobInfo.PluginInfoPreset.Add("ProjectFile", FPaths::GetProjectFilePath());
-	JobInfo.PluginInfoPreset.Add("CommandLineArguments","-log");
+	JobPresetStruct.PluginInfo.Add("Executable", ExecutablePath);
+	JobPresetStruct.PluginInfo.Add("ProjectFile", FPaths::GetProjectFilePath());
+	JobPresetStruct.PluginInfo.Add("CommandLineArguments","-log");
 }
