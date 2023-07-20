@@ -6,6 +6,12 @@
 
 class IDetailPropertyRow;
 
+/**
+ * This customization lives in the MoviePipelineDeadline module because in order to get
+ * the preset assigned to the owning job, we need to cast the owning object to the
+ * UMoviePipelineDeadlineExecutorJob class. We need the assigned preset for the custom
+ * ResetToDefault behaviour.
+ */
 class FDeadlineJobPresetLibraryCustomization : public IPropertyTypeCustomization
 {
 public:

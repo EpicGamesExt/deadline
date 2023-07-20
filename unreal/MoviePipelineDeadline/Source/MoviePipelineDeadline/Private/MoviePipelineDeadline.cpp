@@ -4,8 +4,6 @@
 
 #include "DeadlineJobPresetLibraryCustomization.h"
 #include "DeadlineServiceEditorSettings.h"
-#include "DetailCategoryBuilder.h"
-#include "DetailLayoutBuilder.h"
 
 #include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
@@ -19,10 +17,6 @@ void FMoviePipelineDeadlineModule::StartupModule()
 		FDeadlineJobInfoStruct::StaticStruct()->GetFName(),
 		FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FDeadlineJobPresetLibraryCustomization::MakeInstance));
 
-	PropertyModule.RegisterCustomClassLayout(
-		UMoviePipelineDeadlineExecutorJob::StaticClass()->GetFName(),
-		FOnGetDetailCustomizationInstance::CreateStatic(&FMoviePipelineDeadlineExecutorJobCustomization::MakeInstance));
-
 	PropertyModule.NotifyCustomizationModuleChanged();
 }
 
@@ -31,7 +25,6 @@ void FMoviePipelineDeadlineModule::ShutdownModule()
 	if (FPropertyEditorModule* PropertyModule = FModuleManager::Get().GetModulePtr<FPropertyEditorModule>("PropertyEditor"))
 	{
 		PropertyModule->UnregisterCustomPropertyTypeLayout(FDeadlineJobInfoStruct::StaticStruct()->GetFName());
-		PropertyModule->UnregisterCustomPropertyTypeLayout(UMoviePipelineDeadlineExecutorJob::StaticClass()->GetFName());
 
 		PropertyModule->NotifyCustomizationModuleChanged();
 	}
@@ -40,45 +33,53 @@ void FMoviePipelineDeadlineModule::ShutdownModule()
 UMoviePipelineDeadlineExecutorJob::UMoviePipelineDeadlineExecutorJob()
 		: UMoviePipelineExecutorJob()
 {
-	if (const UMoviePipelineDeadlineSettings* MpdSettings = GetDefault<UMoviePipelineDeadlineSettings>())
+	// If a PresetLibrary is not already defined, assign the default preset library
+	if (!PresetLibrary)
 	{
-		if (UDeadlineServiceEditorSettings* DeadlineServiceSettings = GetMutableDefault<UDeadlineServiceEditorSettings>())
+		if (const UMoviePipelineDeadlineSettings* MpdSettings = GetDefault<UMoviePipelineDeadlineSettings>())
 		{
-			if (FMoviePipelineDeadlineOverrideSettings* Overrides = DeadlineServiceSettings->GetPresetOverrideSettings())
+			if (const TObjectPtr<UDeadlineJobPresetLibrary> DefaultPreset = MpdSettings->DefaultPresetLibrary)
 			{
-				TObjectPtr<UDeadlineJobPresetLibrary> DefaultPreset = MpdSettings->DefaultPresetLibrary;
-				TObjectPtr<UDeadlineJobPresetLibrary> CurrentPreset = Overrides->PresetLibrary;
-				if (!DefaultPreset || CurrentPreset)
-				{
-					return;
-				}
-				
-				DeadlineServiceSettings->GetPresetOverrideSettings()->PresetLibrary = DefaultPreset;
+				PresetLibrary = DefaultPreset;
 			}
 		}
 	}
 }
 
-TSharedRef<IDetailCustomization> FMoviePipelineDeadlineExecutorJobCustomization::MakeInstance()
+FDeadlineJobInfoStruct UMoviePipelineDeadlineExecutorJob::GetDeadlineJobInfoStructWithOverridesIfApplicable() const
 {
-	return MakeShared<FMoviePipelineDeadlineExecutorJobCustomization>();
-}
-
-void FMoviePipelineDeadlineExecutorJobCustomization::CustomizeDetails(IDetailLayoutBuilder& DetailBuilder)
-{
-	// Append override options from Settings object, if it exists
-	if (UDeadlineServiceEditorSettings* DeadlineServiceSettings = GetMutableDefault<UDeadlineServiceEditorSettings>())
+	if (!bShouldOverridePresetProperties)
 	{
-		const TArray<UObject*> Objects = {DeadlineServiceSettings};
-		const TSharedPtr<IPropertyHandle> PropertyHandle = DetailBuilder.AddObjectPropertyData(
-			Objects, TEXT("PresetOverrideSettings"));
-
-		const FName DeadlineCategoryName = TEXT("Deadline");
-		IDetailCategoryBuilder& DeadlineCategory = DetailBuilder.EditCategory(
-			DeadlineCategoryName, FText::FromName(DeadlineCategoryName));
-		
-		DeadlineCategory.AddProperty(PropertyHandle);
+		return PresetLibrary->JobInfo;
 	}
+
+	// Start with preset properties
+	FDeadlineJobInfoStruct ReturnValue = PresetLibrary->JobInfo;
+	
+	const UDeadlineServiceEditorSettings* Settings = GetDefault<UDeadlineServiceEditorSettings>();
+
+	for (TFieldIterator<FProperty> PropIt(FDeadlineJobInfoStruct::StaticStruct()); PropIt; ++PropIt)
+	{
+		const FProperty* Property = *PropIt;
+		if (!Property)
+		{
+			continue;
+		}
+
+		// Skip hidden properties (just return the preset value)
+		if (Settings && Settings->GetIsPropertyHiddenInMovieRenderQueue(*Property->GetPathName()))
+		{
+			continue;
+		}
+
+		// Get Override Property Value
+		const void* OverridePropertyValuePtr = Property->ContainerPtrToValuePtr<void>(&PresetOverrides);
+
+		void* ReturnPropertyValuePtr = Property->ContainerPtrToValuePtr<void>(&ReturnValue);
+		Property->CopyCompleteValue(ReturnPropertyValuePtr, OverridePropertyValuePtr);
+	}
+
+	return ReturnValue;
 }
 
 IMPLEMENT_MODULE(FMoviePipelineDeadlineModule, MoviePipelineDeadline);

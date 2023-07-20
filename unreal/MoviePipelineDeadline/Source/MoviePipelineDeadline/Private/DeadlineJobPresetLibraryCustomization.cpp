@@ -93,7 +93,7 @@ void FDeadlineJobPresetLibraryCustomization::CustomizeChildren(TSharedRef<IPrope
 	{
 		return;
 	}
-	const bool bIsOverrideType = OuterObject->IsA(UDeadlineServiceEditorSettings::StaticClass());
+	const bool bIsOverrideType = OuterObject->IsA(UMoviePipelineDeadlineExecutorJob::StaticClass());
 
 	TMap<FName, IDetailGroup*> CreatedCategories;
 
@@ -197,8 +197,6 @@ void FDeadlineJobPresetLibraryCustomization::CustomizeStructChildrenInAssetDetai
 
 void FDeadlineJobPresetLibraryCustomization::CustomizeStructChildrenInMovieRenderQueue(IDetailPropertyRow& PropertyRow, TWeakObjectPtr<UObject> OuterObject)
 {	
-	const FName PropertyPath(PropertyRow.GetPropertyHandle()->GetProperty()->GetPathName());
-
 	TSharedPtr<SWidget> NameWidget;
 	TSharedPtr<SWidget> ValueWidget;
 	FDetailWidgetRow Row;
@@ -235,9 +233,47 @@ bool FDeadlineJobPresetLibraryCustomization::IsPropertyHiddenInMovieRenderQueue(
 	return false;
 }
 
+bool GetPresetValueAsString(const FProperty* PropertyPtr, TWeakObjectPtr<UObject> OuterObject, FString& OutFormattedValue)
+{
+	if (!PropertyPtr || !OuterObject.IsValid())
+	{
+		return false;
+	}
+
+	const UMoviePipelineDeadlineExecutorJob* DeadlineExecutorJob = Cast<UMoviePipelineDeadlineExecutorJob>(OuterObject.Get());
+	if (!DeadlineExecutorJob)
+	{
+		return false;
+	}
+
+	UDeadlineJobPresetLibrary* SelectedPresetLibrary = DeadlineExecutorJob->PresetLibrary;
+	if (!SelectedPresetLibrary)
+	{
+		return false;
+	}
+
+	const void* ValuePtr = PropertyPtr->ContainerPtrToValuePtr<void>(&SelectedPresetLibrary->JobInfo);
+	PropertyPtr->ExportText_Direct(OutFormattedValue, ValuePtr, ValuePtr, nullptr, PPF_None);
+	return true;
+}
+
 bool FDeadlineJobPresetLibraryCustomization::IsResetToDefaultVisibleOverride(
 	TSharedPtr<IPropertyHandle> PropertyHandle, TWeakObjectPtr<UObject> OuterObject)
 {
+	if (!PropertyHandle || !OuterObject.IsValid())
+	{
+		return true;
+	}
+	
+	if (FString DefaultValueAsString; GetPresetValueAsString(PropertyHandle->GetProperty(), OuterObject, DefaultValueAsString))
+	{
+		FString CurrentValueAsString;
+		PropertyHandle->GetValueAsFormattedString(CurrentValueAsString);
+
+		return CurrentValueAsString != DefaultValueAsString; 
+	}
+
+	// If this fails, just show it by default
 	return true;
 }
 
@@ -248,30 +284,9 @@ void FDeadlineJobPresetLibraryCustomization::ResetToDefaultOverride(
 	{
 		return;
 	}
-
-	UDeadlineServiceEditorSettings* DeadlineServiceEditorSettings = Cast<UDeadlineServiceEditorSettings>(OuterObject.Get());
-	if (!DeadlineServiceEditorSettings)
+	
+	if (FString DefaultValueAsString; GetPresetValueAsString(PropertyHandle->GetProperty(), OuterObject, DefaultValueAsString))
 	{
-		return;
+		PropertyHandle->SetValueFromFormattedString(DefaultValueAsString);
 	}
-
-	UDeadlineJobPresetLibrary* SelectedPresetLibrary = DeadlineServiceEditorSettings->GetPresetOverrideSettings()->PresetLibrary;
-	if (!SelectedPresetLibrary)
-	{
-		return;
-	}
-
-	const FProperty* PropertyPtr = PropertyHandle->GetProperty();
-	if (!PropertyPtr)
-	{
-		return;
-	}
-
-	const void* ValuePtr = PropertyPtr->ContainerPtrToValuePtr<void>(&SelectedPresetLibrary->JobInfo);
-	FString PropertyValueAsText;
-	PropertyPtr->ExportText_Direct(PropertyValueAsText, ValuePtr, ValuePtr, nullptr, PPF_None);
-	PropertyHandle->SetValueFromFormattedString(PropertyValueAsText);
-
-	SelectedPresetLibrary->GetJobInfoAsPythonCompatibleStringMap();
-	SelectedPresetLibrary->GetPluginInfo();
 }

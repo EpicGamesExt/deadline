@@ -192,8 +192,6 @@ struct DEADLINESERVICE_API FDeadlineJobInfoStruct
 	/** Deadline Plugin info key value pair. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Advanced Job Options")
 	TMap<FString, FString> PluginInfoPreset;
-
-	FDeadlineJobInfoStruct();
 };
 
 
@@ -206,21 +204,11 @@ class DEADLINESERVICE_API UDeadlineJobPresetLibrary : public UDataAsset
 	GENERATED_BODY()
 public:
 
+	UDeadlineJobPresetLibrary();
+
 	/** Job info struct */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Info")
 	FDeadlineJobInfoStruct JobInfo;
-
-	/*
-	 * Returns the Deadline job info struct a TMap<FString,FString>
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Job Info")
-	TMap<FString, FString> GetJobInfoAsPythonCompatibleStringMap();
-
-	/*
-	 * Returns the Deadline plugin info struct a TMap<FString,FString>
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Plugin Info")
-	TMap<FString, FString> GetPluginInfo();
 
 	UFUNCTION()
 	static TArray<FString> GetOnJobCompleteOptions()

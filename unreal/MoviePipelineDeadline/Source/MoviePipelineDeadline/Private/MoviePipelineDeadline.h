@@ -4,7 +4,6 @@
 #include "Engine/DeveloperSettings.h"
 #include "MoviePipelineQueue.h"
 #include "DeadlineJobDataAsset.h"
-#include "IDetailCustomization.h"
 #include "Modules/ModuleInterface.h"
 
 #include "MoviePipelineDeadline.generated.h"
@@ -47,17 +46,39 @@ public:
 };
 
 UCLASS(BlueprintType, config = EditorPerProjectUserSettings)
-class UMoviePipelineDeadlineExecutorJob : public UMoviePipelineExecutorJob
+class MOVIEPIPELINEDEADLINE_API UMoviePipelineDeadlineExecutorJob : public UMoviePipelineExecutorJob
 {
 	GENERATED_BODY()
 public:
 	UMoviePipelineDeadlineExecutorJob();
-};
 
-class FMoviePipelineDeadlineExecutorJobCustomization : public IDetailCustomization
-{
-public:
-	static TSharedRef<IDetailCustomization> MakeInstance();
+	/**
+	 * Returns the Deadline job info with overrides applied, if enabled.
+	 * Skips any property not 
+	 */
+	UFUNCTION(BlueprintCallable, Category = "DeadlineService")
+	FDeadlineJobInfoStruct GetDeadlineJobInfoStructWithOverridesIfApplicable() const;
 
-	virtual void CustomizeDetails( IDetailLayoutBuilder& DetailBuilder ) override;
+	/** `Batch Name` groups similar jobs together in the Deadline Monitor UI. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")
+	FString BatchName;
+
+	/* Deadline Preset Library. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Deadline")
+	TObjectPtr<UDeadlineJobPresetLibrary> PresetLibrary;
+
+	/* Output directory override on Deadline. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")
+	FDirectoryPath OutputDirectoryOverride;
+
+	/* Filename Format override on Deadline. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")
+	FString FilenameFormatOverride;
+
+	/* If true, PresetOverrides will be applied when sending the job to Deadline. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")
+	bool bShouldOverridePresetProperties = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline", meta = (EditConditionHides, EditCondition = "bShouldOverridePresetProperties"))
+	FDeadlineJobInfoStruct PresetOverrides = FDeadlineJobInfoStruct();
 };
