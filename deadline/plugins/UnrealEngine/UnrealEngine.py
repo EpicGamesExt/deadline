@@ -524,7 +524,7 @@ class UnrealEngineManagedProcess(ManagedProcess):
         uproject = Path(uproject.replace("\\", "/"))
 
         # Check to see if the Uproject is a relative path
-        if uproject.startswith("../"):
+        if str(uproject).replace("\\", "/").startswith("../"):
 
             if not self._executable_path:
                 self._deadline_plugin.FailRender("Could not find executable path to resolve relative path.")
@@ -538,7 +538,7 @@ class UnrealEngineManagedProcess(ManagedProcess):
             executable_root = Path(engine_dir[0]).parent
 
             # Resolve editor relative paths
-            found_paths = sorted(executable_root.rglob(uproject.as_posix().strip("../")))
+            found_paths = sorted(executable_root.rglob(str(uproject).replace("\\", "/").strip("../")))
 
             if not found_paths or len(found_paths) > 1:
                 self._deadline_plugin.FailRender(
@@ -733,7 +733,7 @@ class UnrealEngineCmdManagedProcess(ManagedProcess):
         ).replace("\\", "/"))
 
         # Check to see if the Uproject is a relative path
-        if project_file.startswith("../"):
+        if str(project_file).replace("\\", "/").startswith("../"):
 
             if not self._executable_path:
                 self._deadline_plugin.FailRender("Could not find executable path to resolve relative path.")
@@ -747,7 +747,7 @@ class UnrealEngineCmdManagedProcess(ManagedProcess):
             executable_root = Path(engine_dir[0]).parent
 
             # Resolve editor relative paths
-            found_paths = sorted(executable_root.rglob(project_file.as_posix().strip("../")))
+            found_paths = sorted(executable_root.rglob(str(project_file).replace("\\", "/").strip("../")))
 
             if not found_paths or len(found_paths) > 1:
                 self._deadline_plugin.FailRender(
