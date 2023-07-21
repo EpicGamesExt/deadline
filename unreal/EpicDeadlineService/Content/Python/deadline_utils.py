@@ -155,7 +155,6 @@ def get_deadline_info_from_preset(job_preset=None, job_preset_struct=None):
 
     # TODO: Make sure the preset library is a loaded asset
     if job_preset is not None:
-
         preset_struct = job_preset.job_preset_struct
 
     if job_preset_struct is not None:
