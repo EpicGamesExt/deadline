@@ -33,25 +33,25 @@ public:
 
 	/** The project level Deadline preset Data Asset */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movie Pipeline Deadline")
-	TObjectPtr<UDeadlineJobPreset> DefaultPresetLibrary;	
+	TObjectPtr<UDeadlineJobPreset> DefaultJobPreset;	
 
 	void AddPropertyToHideInMovieRenderQueue(const FName& InPropertyPath)
 	{
-		JobInfoPropertiesToHideInMovieRenderQueue.Add(InPropertyPath);
+		JobPresetPropertiesToHideInMovieRenderQueue.Add(InPropertyPath);
 	}
 
 	void RemovePropertyToHideInMovieRenderQueue(const FName& InPropertyPath)
 	{
-		JobInfoPropertiesToHideInMovieRenderQueue.Remove(InPropertyPath);
+		JobPresetPropertiesToHideInMovieRenderQueue.Remove(InPropertyPath);
 	}
 
 	bool GetIsPropertyHiddenInMovieRenderQueue(const FName& InPropertyPath) const
 	{
-		return JobInfoPropertiesToHideInMovieRenderQueue.Contains(InPropertyPath);
+		return JobPresetPropertiesToHideInMovieRenderQueue.Contains(InPropertyPath);
 	}
 
 protected:
 
 	UPROPERTY(config)
-	TArray<FName> JobInfoPropertiesToHideInMovieRenderQueue;
+	TArray<FName> JobPresetPropertiesToHideInMovieRenderQueue;
 };

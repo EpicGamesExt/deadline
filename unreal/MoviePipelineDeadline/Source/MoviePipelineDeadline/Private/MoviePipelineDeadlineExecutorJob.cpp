@@ -7,14 +7,14 @@
 UMoviePipelineDeadlineExecutorJob::UMoviePipelineDeadlineExecutorJob()
 		: UMoviePipelineExecutorJob()
 {
-	// If a PresetLibrary is not already defined, assign the default preset library
-	if (!PresetLibrary)
+	// If a Job Preset is not already defined, assign the default preset
+	if (!JobPreset)
 	{
 		if (const UMoviePipelineDeadlineSettings* MpdSettings = GetDefault<UMoviePipelineDeadlineSettings>())
 		{
-			if (const TObjectPtr<UDeadlineJobPreset> DefaultPreset = MpdSettings->DefaultPresetLibrary)
+			if (const TObjectPtr<UDeadlineJobPreset> DefaultPreset = MpdSettings->DefaultJobPreset)
 			{
-				PresetLibrary = DefaultPreset;
+				JobPreset = DefaultPreset;
 			}
 		}
 	}
@@ -50,10 +50,10 @@ void UMoviePipelineDeadlineExecutorJob::SetPropertyRowEnabledInMovieRenderJob(co
 	}
 }
 
-FDeadlineJobPresetStruct UMoviePipelineDeadlineExecutorJob::GetDeadlineJobInfoStructWithOverridesIfApplicable() const
+FDeadlineJobPresetStruct UMoviePipelineDeadlineExecutorJob::GetDeadlineJobPresetStructWithOverrides() const
 {
 	// Start with preset properties
-	FDeadlineJobPresetStruct ReturnValue = PresetLibrary->JobInfo;
+	FDeadlineJobPresetStruct ReturnValue = JobPreset->JobPresetStruct;
 	
 	const UMoviePipelineDeadlineSettings* Settings = GetDefault<UMoviePipelineDeadlineSettings>();
 

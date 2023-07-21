@@ -517,10 +517,6 @@ class UnrealEngineManagedProcess(ManagedProcess):
         if project_root:
             uproject = uproject.format(ProjectRoot=project_root)
 
-        # make sure the executable exists
-        if not FileUtils.FileExists(uproject):
-            self._deadline_plugin.FailRender(f"Could not find `{uproject}`")
-
         # Set up the arguments to startup unreal.
         job_command_args = [
             '"{u_project}"'.format(u_project=uproject.replace("\\", "/")),
