@@ -43,7 +43,7 @@ def register_menu_action():
     """
 
     if not _validate_euw_asset_exists():
-        unreal.log_error(
+        unreal.log_warning(
             f"EUW `{EDITOR_UTILITY_WIDGET}` does not exist in the Asset registry!"
         )
         return
