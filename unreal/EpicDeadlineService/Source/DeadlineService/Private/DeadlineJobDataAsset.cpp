@@ -19,8 +19,18 @@ UDeadlineJobPreset::UDeadlineJobPreset()
 	FString ExecutablePath = FString(FPlatformProcess::ExecutablePath());
 	ExecutablePath.RemoveFromEnd(".exe");
 	ExecutablePath += "-Cmd.exe";
+
+	FString ProjectPath = FString(FPaths::GetProjectFilePath());
+
+	if (FPaths::IsRelative(ProjectPath))
+	{
+		if (const FString FullPath = FPaths::ConvertRelativePathToFull(ProjectPath); FPaths::FileExists(FullPath))
+		{
+			ProjectPath = FullPath;
+		}
+	}
 	
 	JobPresetStruct.PluginInfo.Add("Executable", ExecutablePath);
-	JobPresetStruct.PluginInfo.Add("ProjectFile", FPaths::GetProjectFilePath());
+	JobPresetStruct.PluginInfo.Add("ProjectFile", ProjectPath);
 	JobPresetStruct.PluginInfo.Add("CommandLineArguments","-log");
 }

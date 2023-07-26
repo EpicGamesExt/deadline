@@ -66,7 +66,7 @@ class DeadlineJob:
         :param value:  Value to set on the job info.
         """
         if not isinstance(value, dict):
-            raise ValueError(f"Expected `dict` found {type(value)}")
+            raise TypeError(f"Expected `dict` found {type(value)}")
 
         self._job_info = merge_dictionaries(self.job_info, value)
 
@@ -93,7 +93,7 @@ class DeadlineJob:
         :param value: Value to set on plugin info.
         """
         if not isinstance(value, dict):
-            raise ValueError(f"Expected `dict` found {type(value)}")
+            raise TypeError(f"Expected `dict` found {type(value)}")
 
         self._plugin_info = merge_dictionaries(self.plugin_info, value)
 

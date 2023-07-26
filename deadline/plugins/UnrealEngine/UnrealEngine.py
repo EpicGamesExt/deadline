@@ -4,6 +4,7 @@
 import os
 import time
 from datetime import datetime
+from pathlib import Path
 
 from Deadline.Plugins import DeadlinePlugin, PluginType
 from FranticX.Processes import ManagedProcess
@@ -334,6 +335,7 @@ class UnrealEngineManagedProcess(ManagedProcess):
         self._deadline_rpc_manager = deadline_rpc_manager
         self._temp_rpc_client = None
         self._name = process_name
+        self._executable_path = None
 
     def clean_up(self):
         """
@@ -489,9 +491,11 @@ class UnrealEngineManagedProcess(ManagedProcess):
         if not FileUtils.FileExists(executable):
             self._deadline_plugin.FailRender(f"Could not find `{executable}`")
 
+        self._executable_path = executable.replace("\\", "/")
+
         self._deadline_plugin.LogInfo(f"Found executable `{executable}`")
 
-        return executable.replace("\\", "/")
+        return self._executable_path
 
     def _render_argument(self):
         """
@@ -517,9 +521,39 @@ class UnrealEngineManagedProcess(ManagedProcess):
         if project_root:
             uproject = uproject.format(ProjectRoot=project_root)
 
+        uproject = Path(uproject.replace("\\", "/"))
+
+        # Check to see if the Uproject is a relative path
+        if str(uproject).replace("\\", "/").startswith("../"):
+
+            if not self._executable_path:
+                self._deadline_plugin.FailRender("Could not find executable path to resolve relative path.")
+
+            # Find executable root
+            import re
+            engine_dir = re.findall("([\s\S]*.Engine)", self._executable_path)
+            if not engine_dir:
+                self._deadline_plugin.FailRender("Could not find executable Engine directory.")
+
+            executable_root = Path(engine_dir[0]).parent
+
+            # Resolve editor relative paths
+            found_paths = sorted(executable_root.rglob(str(uproject).replace("\\", "/").strip("../")))
+
+            if not found_paths or len(found_paths) > 1:
+                self._deadline_plugin.FailRender(
+                    f"Found multiple uprojects relative to the root directory. There should only be one when a relative path is defined."
+                )
+
+            uproject = found_paths[0]
+
+        # make sure the project exists
+        if not FileUtils.FileExists(uproject.as_posix()):
+            self._deadline_plugin.FailRender(f"Could not find `{uproject.as_posix()}`")
+
         # Set up the arguments to startup unreal.
         job_command_args = [
-            '"{u_project}"'.format(u_project=uproject.replace("\\", "/")),
+            '"{u_project}"'.format(u_project=uproject.as_posix()),
             self._deadline_plugin.GetPluginInfoEntryWithDefault("CommandLineArguments", ""),
             # Force "-log" otherwise there is no output from the executable
             "-log",
@@ -548,6 +582,7 @@ class UnrealEngineCmdManagedProcess(ManagedProcess):
         self._name = process_name
         self.ExitCode = -1
         self._startup_dir = startup_dir
+        self._executable_path = None
 
         self.InitializeProcessCallback += self._initialize_process
         self.RenderExecutableCallback += self._render_executable
@@ -663,8 +698,9 @@ class UnrealEngineCmdManagedProcess(ManagedProcess):
         self._deadline_plugin.LogInfo(
             "Render Executable: {exe}".format(exe=executable)
         )
+        self._executable_path = executable.replace("\\", "/")
 
-        return executable
+        return self._executable_path
 
     def _render_argument(self):
         """
@@ -692,9 +728,37 @@ class UnrealEngineCmdManagedProcess(ManagedProcess):
                 f"Expected project file but found `{project_file}`"
             )
 
-        project_file = project_file.replace("\u201c", '"').replace(
+        project_file = Path(project_file.replace("\u201c", '"').replace(
             "\u201d", '"'
-        )
+        ).replace("\\", "/"))
+
+        # Check to see if the Uproject is a relative path
+        if str(project_file).replace("\\", "/").startswith("../"):
+
+            if not self._executable_path:
+                self._deadline_plugin.FailRender("Could not find executable path to resolve relative path.")
+
+            # Find executable root
+            import re
+            engine_dir = re.findall("([\s\S]*.Engine)", self._executable_path)
+            if not engine_dir:
+                self._deadline_plugin.FailRender("Could not find executable Engine directory.")
+
+            executable_root = Path(engine_dir[0]).parent
+
+            # Resolve editor relative paths
+            found_paths = sorted(executable_root.rglob(str(project_file).replace("\\", "/").strip("../")))
+
+            if not found_paths or len(found_paths) > 1:
+                self._deadline_plugin.FailRender(
+                    f"Found multiple uprojects relative to the root directory. There should only be one when a relative path is defined."
+                )
+
+            project_file = found_paths[0]
+
+        # make sure the project exists
+        if not FileUtils.FileExists(project_file.as_posix()):
+            self._deadline_plugin.FailRender(f"Could not find `{project_file.as_posix()}`")
 
         # Get the render arguments
         args = RepositoryUtils.CheckPathMapping(
@@ -707,9 +771,7 @@ class UnrealEngineCmdManagedProcess(ManagedProcess):
 
         startup_args = " ".join(
             [
-                '"{u_project}"'.format(
-                    u_project=project_file.replace("\\", "/")
-                ),
+                '"{u_project}"'.format(u_project=project_file.as_posix()),
                 args,
                 "-log",
                 "-unattended",

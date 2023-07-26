@@ -50,6 +50,18 @@ void UMoviePipelineDeadlineExecutorJob::SetPropertyRowEnabledInMovieRenderJob(co
 	}
 }
 
+void UMoviePipelineDeadlineExecutorJob::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	// Check if we changed the job Preset an update the override details
+	if (const FName PropertyName = PropertyChangedEvent.GetPropertyName(); PropertyName == "JobPreset")
+	{
+		if (const UDeadlineJobPreset* SelectedJobPreset = this->JobPreset)
+		{
+			this->PresetOverrides = SelectedJobPreset->JobPresetStruct;
+		}
+	}
+}
+
 FDeadlineJobPresetStruct UMoviePipelineDeadlineExecutorJob::GetDeadlineJobPresetStructWithOverrides() const
 {
 	// Start with preset properties

@@ -27,6 +27,12 @@ public:
 
 	void SetPropertyRowEnabledInMovieRenderJob(const FName& InPropertyPath, bool bInEnabled);
 
+	/** UObject interface */
+	#if WITH_EDITOR
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+#endif
+	
+
 	/**
 	 * Returns the Deadline job info with overrides applied, if enabled.
 	 * Skips any property not 
