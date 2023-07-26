@@ -19,7 +19,7 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 {
 	/**
 	 * If any of these variable names must change for any reason, be sure to update the string literals in the source as well
-	 * such as in DeadlineJobDataAsset.cpp and MoviePipelineDeadline/DeadlineJobPresetLibraryCustomization.cpp, et al.
+	 * such as in DeadlineJobDataAsset.cpp and MoviePipelineDeadline/DeadlineJobPresetCustomization.cpp, et al.
 	 */
 	GENERATED_BODY()
 
@@ -215,5 +215,5 @@ public:
 	{
 		return {"Nothing","Delete","Archive"};
 	}
-	
+
 };

@@ -66,10 +66,7 @@ def _validate_euw_asset_exists():
         include_only_on_disk_assets=True
     )
 
-    if asset_data is not None:
-        return True
-
-    return False
+    return True if asset_data else False
 
 
 def _execute_submission(args):

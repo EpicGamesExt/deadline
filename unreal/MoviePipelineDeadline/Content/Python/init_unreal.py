@@ -7,34 +7,46 @@ from pathlib import Path
 # Third-party
 import unreal
 
-################################################################################
-# Always execute this first to make sure the Asset registry has picked up all
-# assets before continuing
-
-
-# The asset registry may not be fully loaded by the time this is called, so we
-# will wait until it has finished parsing all the assets in the project
-# before we move on, otherwise attempts to look assets up may fail
-# unexpectedly.
+movie_pipeline_tick_handle = None
 asset_registry = unreal.AssetRegistryHelpers.get_asset_registry()
+plugin_name = "MoviePipelineDeadline"
+
+
+def _load_plugin_after_asset_registry(delta_seconds):
+    """
+    This functions async waits for the asset registry to load before loading
+    the plugin modules
+    """
+    global asset_registry
+    if asset_registry.is_loading_assets():
+        return
+
+    global movie_pipeline_tick_handle
+
+    unreal.unregister_slate_post_tick_callback(movie_pipeline_tick_handle)
+
+    movie_pipeline_tick_handle = None
+
+    global plugin_name
+
+    unreal.log(f"Asset Registry is complete. Loading {plugin_name} plugin.")
+
+    import remote_executor
+    import mrq_cli
+
+    from pipeline_actions import render_queue_action
+
+    # Register the menu from the render queue actions
+    render_queue_action.register_menu_action()
+
+
+# The asset registry may not be fully loaded by the time this is called,
+# warn the user that attempts to look assets up may fail
+# unexpectedly.
 if asset_registry.is_loading_assets():
-    unreal.log_warning("Asset Registry is loading, waiting to complete...")
-    asset_registry.wait_for_completion()
+    unreal.log_warning(
+        f"Asset Registry is still loading. The {plugin_name} plugin will "
+        f"be loaded after the Asset Registry is complete."
+    )
 
-    unreal.log_warning("Asset Registry load complete!")
-
-###############################################################################
-
-import remote_executor
-import mrq_cli
-
-# Add the actions path to sys path
-actions_path = Path(__file__).parent.joinpath("pipeline_actions").as_posix().lower()
-
-if actions_path not in sys.path:
-    sys.path.append(actions_path)
-
-from pipeline_actions import render_queue_action
-
-# Register the menu from the render queue actions
-render_queue_action.register_menu_action()
+movie_pipeline_tick_handle = unreal.register_slate_post_tick_callback(_load_plugin_after_asset_registry)
