@@ -364,6 +364,10 @@ class MoviePipelineDeadlineRemoteExecutor(unreal.MoviePipelineExecutorBase):
                 '-execcmds="{cmds}"'.format(cmds=",".join(out_exec_cmds))
             )
 
+        # Add support for telling the remote process to wait for the
+        # asset registry to complete synchronously
+        command_args.append("-waitonassetregistry")
+
         # Build a shot-mask from this sequence, to split into the appropriate
         # number of tasks. Remove any already-disabled shots before we
         # generate a list, otherwise we make unneeded tasks which get sent to
