@@ -71,7 +71,7 @@ struct FDeadlineJobInfoStruct
 
 	/** Deadline Plugin used to execute the current job. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plugin")
-	FString Plugin = TEXT("UnrealEngine");
+	FString Plugin = TEXT("UnrealEngine5");
 
 	/** Deadline Auxiliary files to upload for the current job */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Aux Files")

@@ -4,7 +4,7 @@ Label=About
 Category=About Plugin
 CategoryOrder=-1
 Index=0
-Default=Unreal Engine Plugin for Deadline
+Default=Unreal Engine 5 Plugin for Deadline
 Description=Not configurable
 
 [ConcurrentTasks]

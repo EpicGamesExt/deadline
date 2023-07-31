@@ -8,7 +8,7 @@ from DeadlineUI.Controls.Scripting.DeadlineScriptDialog import (
 from Deadline.Scripting import MonitorUtils
 
 
-PLUGIN = "UnrealEngine"
+PLUGIN = "UnrealEngine5"
 SCRIPT_DIALOG = None
 
 

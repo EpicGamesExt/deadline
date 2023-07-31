@@ -3,16 +3,18 @@
 # Built-In
 import logging
 import json
-from urllib.parse import urljoin
-
-# Third-party
-from urllib3 import PoolManager
-from urllib3.exceptions import HTTPError
-
+logger = logging.getLogger("DeadlineHTTP")
+try:
+    # Third-party
+    from urllib.parse import urljoin
+    from urllib3 import PoolManager
+    from urllib3.exceptions import HTTPError
+except ImportError:
+    logger.info("module 'urllib3' not found")
 # Internal
 from deadline_enums import HttpRequestType
 
-logger = logging.getLogger("DeadlineHTTP")
+
 
 
 class DeadlineHttp:
@@ -29,7 +31,7 @@ class DeadlineHttp:
         :param str host: Deadline server host
         """
         self.host = host
-        self._http_manager = PoolManager()
+        
 
     # ------------------------------------------------------------------------------------------------------------------
     # Public Methods
@@ -45,6 +47,7 @@ class DeadlineHttp:
         :param int retries: The number of retries to attempt before failing request. Defaults to 0.
         :return: JSON object response from the server.
         """
+        self._http_manager = PoolManager(cert_reqs='CERT_NONE')   # Disable SSL certificate check
         # Validate request type
         if not isinstance(request_type, HttpRequestType):
             raise ValueError(f"Request type must be of type {type(HttpRequestType)}")

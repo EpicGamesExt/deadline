@@ -133,8 +133,8 @@ def format_plugin_info_json_string(json_string):
         plugin_info = info["pluginInfo"]
 
     except Exception as err:
-        raise RuntimeError(f"An error occurred formatting the Job Info string. \n\t{err}")
-
+        raise RuntimeError(f"An error occurred formatting the Plugin Info string. \n\t{err}")
+    
     # The plugin info is listed under the `plugin_info` key.
     # The json string keys are camelCased on struct conversion to json.
     return plugin_info
@@ -156,6 +156,9 @@ def get_deadline_info_from_preset(preset_name, preset_library):
 
         # Get the Job Info and plugin Info
         try:
+            preset_data = preset_library.get_job_info_preset_json_string(preset_name)
+            if not preset_data:
+                raise RuntimeError(f"An error occured while fetching {preset_name}.\nIs the name \"{preset_name}\" in your preset library?")
             job_info = format_job_info_json_string(
                 preset_library.get_job_info_preset_json_string(preset_name)
             )
