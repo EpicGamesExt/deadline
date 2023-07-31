@@ -3,3 +3,8 @@
 docs/build/*
 *.pyc
 unreal/EpicDeadlineService/Content/Python/Lib/Win64/*
+unreal/MoviePipelineDeadline/Intermediate/*
+unreal/MoviePipelineDeadline/Binaries/*
+unreal/EpicDeadlineService/Intermediate/*
+unreal/EpicDeadlineService/Binaries/*
+*.old

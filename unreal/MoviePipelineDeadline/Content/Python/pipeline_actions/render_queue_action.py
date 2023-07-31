@@ -43,7 +43,7 @@ def register_menu_action():
     """
 
     if not _validate_euw_asset_exists():
-        unreal.log_error(
+        unreal.log_warning(
             f"EUW `{EDITOR_UTILITY_WIDGET}` does not exist in the Asset registry!"
         )
         return
@@ -71,10 +71,7 @@ def _validate_euw_asset_exists():
         include_only_on_disk_assets=True
     )
 
-    if asset_data is not None:
-        return True
-
-    return False
+    return True if asset_data else False
 
 
 def _execute_submission(args):
@@ -86,8 +83,7 @@ def _execute_submission(args):
     unreal.log("Executing job submission")
 
     job_info, plugin_info = get_deadline_info_from_preset(
-        args.submission_preset_name,
-        unreal.load_asset(args.preset_library)
+        job_preset=unreal.load_asset(args.submission_job_preset)
     )
 
     # Due to some odd behavior in how Unreal passes string to the argparse,
@@ -146,10 +142,8 @@ def _execute_submission(args):
         "--cmdline",
         "--batch_name",
         batch_name,
-        "--preset_name",
-        str(args.remote_preset_name),
-        "--preset_library",
-        str(args.preset_library)
+        "--deadline_job_preset",
+        str(args.remote_job_preset)
     ]
 
     command_args.extend(
@@ -185,7 +179,9 @@ def _execute_submission(args):
             "Failed to get a project name. Please specify a project!"
         )
 
-    project_file = plugin_info.get("ProjectFile", game_name_or_project_file)
+    if not plugin_info.get("ProjectFile"):
+        project_file = plugin_info.get("ProjectFile", game_name_or_project_file)
+        plugin_info["ProjectFile"] = project_file
 
     # Update the plugin info. "CommandLineMode" tells Deadline to not use an
     # interactive process to execute the job but launch it like a shell
@@ -194,7 +190,6 @@ def _execute_submission(args):
     # complete
     plugin_info.update(
         {
-            "ProjectFile": project_file,
             "CommandLineArguments": full_cmd_args,
             "CommandLineMode": "true"
         }
@@ -225,19 +220,14 @@ if __name__ == "__main__":
         help="Deadline Batch Name"
     )
     parser.add_argument(
-        "--submission_preset_name",
+        "--submission_job_preset",
         type=str,
-        help="Deadline Preset Name"
+        help="Submitter Deadline Job Preset"
     )
     parser.add_argument(
-        "--remote_preset_name",
+        "--remote_job_preset",
         type=str,
-        help="Deadline Preset Name"
-    )
-    parser.add_argument(
-        "--preset_library",
-        type=str,
-        help="Deadline Preset Library"
+        help="Remote Deadline Job Preset"
     )
     parser.add_argument(
         "--queue_asset",

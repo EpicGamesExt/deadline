@@ -29,8 +29,7 @@ def render_jobs(
     is_cmdline=False,
     executor_instance=None,
     remote_batch_name=None,
-    remote_preset_name=None,
-    remote_preset_library=None,
+    remote_job_preset=None,
     output_dir_override=None,
     output_filename_override=None
 ):
@@ -41,8 +40,7 @@ def render_jobs(
     :param bool is_cmdline: Is this a commandline render
     :param executor_instance: Movie Pipeline Executor instance
     :param str remote_batch_name: Batch name for remote renders
-    :param str remote_preset_name: Preset name from the Preset library
-    :param str remote_preset_library: Remote render preset library
+    :param str remote_job_preset: Remote render job preset
     :param str output_dir_override: Movie Pipeline output directory override
     :param str output_filename_override: Movie Pipeline filename format override
     :return: MRQ executor
@@ -76,8 +74,7 @@ def render_jobs(
     if is_remote:
         setup_remote_render_jobs(
             remote_batch_name,
-            remote_preset_name,
-            remote_preset_library,
+            remote_job_preset,
             movie_pipeline_queue.get_jobs(),
         )
 
@@ -109,8 +106,7 @@ def _process_args(args):
         is_remote=args.remote,
         is_cmdline=args.cmdline,
         remote_batch_name=args.batch_name,
-        remote_preset_name=args.preset_name,
-        remote_preset_library=args.preset_library,
+        remote_job_preset=args.deadline_job_preset,
         output_dir_override=args.output_override,
         output_filename_override=args.filename_override
     )

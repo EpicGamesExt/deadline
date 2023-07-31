@@ -12,12 +12,15 @@ public class MoviePipelineDeadline : ModuleRules
 			new string[] {
 				"Core",
 				"CoreUObject",
-				"InputCore",
-				"RenderCore",
-				"Engine",
-				"MovieRenderPipelineCore",
+				"DeadlineService",
 				"DeveloperSettings",
-				"DeadlineService"
+				"Engine",
+				"InputCore",
+				"MovieRenderPipelineCore",
+				"PropertyEditor",
+				"RenderCore",
+				"Slate",
+				"SlateCore"
 			}
 		);
 
