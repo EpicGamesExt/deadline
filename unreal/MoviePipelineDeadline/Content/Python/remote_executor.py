@@ -142,9 +142,8 @@ class MoviePipelineDeadlineRemoteExecutor(unreal.MoviePipelineExecutorBase):
             ["-nohmd", "-windowed", f"-ResX=1280", f"-ResY=720"]
         )
 
-        # Get the project level preset library and preset name
-        project_preset_library = deadline_settings.default_preset_library
-        project_preset_name = deadline_settings.default_preset_name
+        # Get the project level preset
+        project_preset = deadline_settings.default_job_preset
 
         # Get the job and plugin info string.
         # Note:
@@ -153,9 +152,8 @@ class MoviePipelineDeadlineRemoteExecutor(unreal.MoviePipelineExecutorBase):
         #   as we primarily care about the job level preset.
         #   Catch any exceptions here and continue
         try:
-            project_job_info, project_plugin_info = get_deadline_info_from_preset(
-                project_preset_name, project_preset_library
-            )
+            project_job_info, project_plugin_info = get_deadline_info_from_preset(job_preset=project_preset)
+
         except Exception:
             pass
 
@@ -168,9 +166,7 @@ class MoviePipelineDeadlineRemoteExecutor(unreal.MoviePipelineExecutorBase):
             try:
                 # Create a Deadline job object with the default project level
                 # job info and plugin info
-                deadline_job = DeadlineJob(
-                    project_job_info, project_plugin_info
-                )
+                deadline_job = DeadlineJob(project_job_info, project_plugin_info)
 
                 deadline_job_id = self.submit_job(
                     job, deadline_job, command_args, deadline_service
@@ -256,10 +252,7 @@ class MoviePipelineDeadlineRemoteExecutor(unreal.MoviePipelineExecutorBase):
         # Get the Job Info and plugin Info
         # If we have a preset set on the job, get the deadline submission details
         try:
-            job_info, plugin_info = get_deadline_info_from_preset(
-                job.preset_name,
-                job.preset_library
-            )
+            job_info, plugin_info = get_deadline_info_from_preset(job_preset_struct=job.get_deadline_job_preset_struct_with_overrides())
 
         # Fail the submission if any errors occur
         except Exception as err:
@@ -279,18 +272,17 @@ class MoviePipelineDeadlineRemoteExecutor(unreal.MoviePipelineExecutorBase):
             raise RuntimeError(f"An error occurred formatting the Plugin Info string. \n\tProjectFile value cannot be empty")
 
         # Update the job info with overrides from the UI
-        job_info["BatchName"] = job.batch_name
-        if hasattr(job, "comment"):
+        if job.batch_name:
+            job_info["BatchName"] = job.batch_name
+
+        if hasattr(job, "comment") and not job_info.get("Comment"):
             job_info["Comment"] = job.comment
-        job_info["Name"] = job.job_name
+
+        if not job_info.get("Name") or job_info["Name"] == "Untitled":
+            job_info["Name"] = job.job_name
 
         if job.author:
             job_info["UserName"] = job.author
-
-        # Get project overrides
-        deadline_settings = unreal.get_default_object(
-            unreal.MoviePipelineDeadlineSettings
-        )
 
         if unreal.Paths.is_project_file_path_set():
             # Trim down to just "Game.uproject" instead of absolute path.
@@ -367,6 +359,10 @@ class MoviePipelineDeadlineRemoteExecutor(unreal.MoviePipelineExecutorBase):
             command_args.append(
                 '-execcmds="{cmds}"'.format(cmds=",".join(out_exec_cmds))
             )
+
+        # Add support for telling the remote process to wait for the
+        # asset registry to complete synchronously
+        command_args.append("-waitonassetregistry")
 
         # Build a shot-mask from this sequence, to split into the appropriate
         # number of tasks. Remove any already-disabled shots before we
@@ -446,7 +442,10 @@ class MoviePipelineDeadlineRemoteExecutor(unreal.MoviePipelineExecutorBase):
 
         # Get the current commandline args from the plugin info
         plugin_info_cmd_args = [plugin_info.get("CommandLineArguments", "")]
-        project_file = plugin_info.get("ProjectFile", game_name_or_project_file)
+
+        if not plugin_info.get("ProjectFile"):
+            project_file = plugin_info.get("ProjectFile", game_name_or_project_file)
+            plugin_info["ProjectFile"] = project_file
 
         # This is the map included in the plugin to boot up to.
         project_cmd_args = [
@@ -464,7 +463,6 @@ class MoviePipelineDeadlineRemoteExecutor(unreal.MoviePipelineExecutorBase):
         # Update the plugin info with the commandline arguments
         plugin_info.update(
             {
-                "ProjectFile": project_file,
                 "CommandLineArguments": full_cmd_args,
                 "CommandLineMode": "false",
             }

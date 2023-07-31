@@ -181,16 +181,13 @@ def get_asset_data(name_or_path, asset_class):
         raise RuntimeError(f"`{name_or_path}` could not be found!")
 
 
-def setup_remote_render_jobs(
-    batch_name, preset_name, preset_library, render_jobs
-):
+def setup_remote_render_jobs(batch_name, job_preset, render_jobs):
     """
     This function sets up a render job with the options for a remote render.
     This is configured currently for deadline jobs.
 
     :param str batch_name: Remote render batch name
-    :param str preset_name: Preset name in the preset library
-    :param str preset_library: Preset library to use for job details
+    :param str job_preset: Job Preset to use for job details
     :param list render_jobs: The list of render jobs to apply the ars to
     """
 
@@ -206,10 +203,7 @@ def setup_remote_render_jobs(
         if hasattr(job, "batch_name") and not batch_name:
             unset_job_properties.append(job.name)
 
-        if hasattr(job, "preset_name") and not preset_name:
-            unset_job_properties.append(job.name)
-
-        if hasattr(job, "preset_library") and not preset_library:
+        if hasattr(job, "job_preset") and not job_preset:
             unset_job_properties.append(job.name)
 
     # If we find a deadline property on the job, and it's not set, raise an
@@ -224,10 +218,9 @@ def setup_remote_render_jobs(
 
     for render_job in render_jobs:
         render_job.batch_name = batch_name
-        render_job.preset_name = preset_name
-        render_job.preset_library = get_asset_data(
-            preset_library,
-            "DeadlineJobPresetLibrary"
+        render_job.job_preset = get_asset_data(
+            job_preset,
+            "DeadlineJobPreset"
         ).get_asset()
 
 
