@@ -5,6 +5,7 @@ Category=Executable
 Index=0
 Description=Unreal Executable
 Required=true
+Default=
 DisableIfBlank=false
 
 [LoggingDirectory]
@@ -23,6 +24,7 @@ Category=Project
 Index=0
 Description=The name of the .uproject file ("MyGame.uproject") within the Game folder.
 Required=true
+Default=
 DisableIfBlank=false
 
 [CommandLineArguments]
@@ -32,6 +34,7 @@ Category=Project
 Index=1
 Description=What command line arguments should be passed to the executable?
 Required=false
+Default=
 DisableIfBlank=false
 
 [CommandLineMode]
@@ -52,4 +55,5 @@ CategoryOrder=0
 Index=3
 Description=The directory to start the command line in (leave blank to use default)
 Required=false
+Default=
 DisableIfBlank=true
