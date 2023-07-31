@@ -8,7 +8,6 @@ from getpass import getuser
 from deadline_service import get_global_deadline_service_instance
 from deadline_job import DeadlineJob
 from deadline_menus import DeadlineToolBarMenu
-from deadline_utils import get_deadline_info_from_preset
 
 # Third Party
 import unreal
@@ -39,7 +38,7 @@ def register_menu_action():
     """
 
     if not _validate_euw_asset_exists():
-        unreal.log_error(
+        unreal.log_warning(
             f"EUW {EDITOR_UTILITY_WIDGET} does not exist in the Asset registry!"
         )
         return
@@ -67,10 +66,7 @@ def _validate_euw_asset_exists():
         include_only_on_disk_assets=True
     )
 
-    if asset_data is not None:
-        return True
-
-    return False
+    return True if asset_data else False
 
 
 def _execute_submission(args):
@@ -81,17 +77,12 @@ def _execute_submission(args):
 
     unreal.log("Executing job submission")
 
-    job_info, plugin_info = get_deadline_info_from_preset(
-        args.preset_name,
-        unreal.load_asset(args.preset_library)
-    )
+    # Create a Deadline job from the selected job preset
+    deadline_job = DeadlineJob(job_preset=unreal.load_asset(args.job_preset_asset))
 
-    # Set the Author of the job
-    if not job_info.get("UserName", None):
-        job_info["UserName"] = getuser()
-
-    # Create a Deadline job from the selected preset library
-    deadline_job = DeadlineJob(job_info, plugin_info)
+    # If there is no author set, use the current user
+    if not deadline_job.job_info.get("UserName", None):
+        deadline_job.job_info = {"UserName": getuser()}
 
     deadline_service = get_global_deadline_service_instance()
 
@@ -110,15 +101,9 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "--preset_name",
+        "--job_preset_asset",
         type=str,
-        help="Deadline Preset Name"
-    )
-
-    parser.add_argument(
-        "--preset_library",
-        type=str,
-        help="Deadline Preset Library"
+        help="Deadline Job Preset Asset"
     )
 
     parser.set_defaults(func=_execute_submission)

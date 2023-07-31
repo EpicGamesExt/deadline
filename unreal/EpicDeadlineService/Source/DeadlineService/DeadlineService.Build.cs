@@ -11,10 +11,14 @@ public class DeadlineService : ModuleRules
 			new string[] {
 				"Core",
 				"CoreUObject",
+				"EditorStyle",
 				"Engine",
 				"DeveloperSettings",
 				"UnrealEd",
-				"JsonUtilities"
+				"JsonUtilities",
+				"PropertyEditor",
+				"SlateCore",
+				"Slate"
 			}
 		);
 
