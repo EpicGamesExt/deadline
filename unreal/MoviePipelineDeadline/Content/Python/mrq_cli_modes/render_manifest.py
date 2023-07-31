@@ -44,8 +44,7 @@ def render_queue_manifest(
     is_remote=False,
     is_cmdline=False,
     remote_batch_name=None,
-    remote_preset_name=None,
-    remote_preset_library=None,
+    remote_job_preset=None,
     executor_instance=None,
     output_dir_override=None,
     output_filename_override=None
@@ -60,8 +59,7 @@ def render_queue_manifest(
     :param bool is_remote: Flag to determine if the jobs should be rendered remote
     :param bool is_cmdline: Flag to determine if the job is a commandline job
     :param str remote_batch_name: Batch name for remote renders
-    :param str remote_preset_name: Preset name from the Preset library
-    :param str remote_preset_library: Remote render preset library
+    :param str remote_job_preset: Remote render preset library
     :param executor_instance: Movie Pipeline executor instance
     :param str output_dir_override: Movie Pipeline output directory override
     :param str output_filename_override: Movie Pipeline filename format override
@@ -128,8 +126,7 @@ def render_queue_manifest(
         executor = render_jobs(
             is_remote,
             remote_batch_name=remote_batch_name,
-            remote_preset_name=remote_preset_name,
-            remote_preset_library=remote_preset_library,
+            remote_job_preset=remote_job_preset,
             executor_instance=executor_instance,
             is_cmdline=is_cmdline,
             output_dir_override=output_dir_override,
@@ -162,8 +159,7 @@ def _process_args(args):
         is_remote=args.remote,
         is_cmdline=args.cmdline,
         remote_batch_name=args.batch_name,
-        remote_preset_name=args.preset_name,
-        remote_preset_library=args.preset_library,
+        remote_job_preset=args.deadline_job_preset,
         output_dir_override=args.output_override,
         output_filename_override=args.filename_override
     )
