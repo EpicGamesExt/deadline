@@ -261,19 +261,15 @@ class MoviePipelineDeadlineRemoteExecutor(unreal.MoviePipelineExecutorBase):
                 f"details. \n\tError: {err} "
             )
 
-        # If the job doesn't have the deadline group/pool set,
-        # don't submit as it will bounce around workers aimlessly.
-        if job_info.get("Group") not in deadline_service.groups:
-            raise RuntimeError(
-                f"Could not find Group: \"{job_info['Group']}\". "
-                f"Available Groups: {', '.join(deadline_service.groups)}"
-            )
-
-        if job_info.get("Pool") not in deadline_service.pools:
-            raise RuntimeError(
-                f"Could not find Pool: \"{job_info['Pool']}\". "
-                f"Available Pools: {' '.join(deadline_service.pools)}"
-            )
+        # check for required fields in pluginInfo
+        if "Executable" not in plugin_info:
+            raise RuntimeError("An error occurred formatting the Plugin Info string. \n\tMissing \"Executable\" key")
+        elif not plugin_info["Executable"]:
+            raise RuntimeError(f"An error occurred formatting the Plugin Info string. \n\tExecutable value cannot be empty")
+        if "ProjectFile" not in plugin_info:
+            raise RuntimeError("An error occurred formatting the Plugin Info string. \n\tMissing \"ProjectFile\" key")
+        elif not plugin_info["ProjectFile"]:
+            raise RuntimeError(f"An error occurred formatting the Plugin Info string. \n\tProjectFile value cannot be empty")
 
         # Update the job info with overrides from the UI
         if job.batch_name:

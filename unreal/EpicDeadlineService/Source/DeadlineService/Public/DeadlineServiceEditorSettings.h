@@ -28,6 +28,14 @@ public:
 	}
 
 	/**
+	* Toggle use Deadline command for submission.
+	* If used Deadline command preempts use of the web service.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")
+	bool bDeadlineCommand = true;
+
+
+	/**
 	* What is the host name for the Deadline Server that the REST API is running on?
 	* Only needs the host name and port (ie: http://localhost:port)
 	*/

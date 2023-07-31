@@ -68,6 +68,11 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
 	bool bEnableAutoTimeout = false;
 
+
+	/** Deadline Plugin used to execute the current job. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plugin")
+	FString Plugin = TEXT("UnrealEngine5");
+
 	/**
 	 * Specifies the maximum number of tasks that a Worker can render at a time.
 	 * This is useful for script plugins that support multithreading.
@@ -78,6 +83,7 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 	/** If ConcurrentTasks is greater than 1, setting this to true will ensure that a Worker will not dequeue more tasks than it has processors. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
 	bool bLimitConcurrentTasksToNumberOfCpus = true;
+
 
 	/** Specifies the maximum number of machines this job can be rendered on at the same time (0 means unlimited). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options", meta = (ClampMin = 0))

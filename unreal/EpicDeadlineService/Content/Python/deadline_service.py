@@ -17,6 +17,7 @@ from deadline_job import DeadlineJob
 from deadline_http import DeadlineHttp
 from deadline_enums import DeadlineJobState, DeadlineJobStatus, HttpRequestType
 from deadline_utils import get_editor_deadline_globals
+from deadline_command import DeadlineCommand
 
 # Third-party
 import unreal
@@ -90,6 +91,9 @@ class DeadlineService(metaclass=_Singleton):
         self._event_timer_manager = self.get_event_manager()
         self._event_handler = None
 
+        # Use DeadlineCommand by defaut
+        self._use_deadline_command = self._get_use_deadline_cmd() # True  # TODO: hardcoded for testing, change to project read setting
+
         # Get/Set service host
         self._host = host or self._get_deadline_host()
 
@@ -117,6 +121,22 @@ class DeadlineService(metaclass=_Singleton):
         :return: List of groups  on the server
         """
         return self._get_groups()
+
+    @property
+    def use_deadline_command(self):
+        """
+        Returns the current value of the use deadline command flag
+        :return: True if the service uses the deadline command, False otherwise
+        """
+        return self._use_deadline_command
+
+    @use_deadline_command.setter
+    def use_deadline_command(self, value):
+        """
+        Sets the use deadline command flag
+        :param value: True if the service uses the deadline command, False otherwise
+        """
+        self._use_deadline_command = value
 
     @property
     def host(self):
@@ -168,23 +188,29 @@ class DeadlineService(metaclass=_Singleton):
         """
         This method updates the set of pools tracked by the service
         """
-        response = self.send_http_request(
-            HttpRequestType.GET,
-            "api/pools",
-            headers={'Content-Type': 'application/json'}
-        )
-        return json.loads(response.decode('utf-8'))
+        if self._get_use_deadline_cmd(): # if self._use_deadline_command:
+            return DeadlineCommand().get_pools()
+        else:
+            response = self.send_http_request(
+                HttpRequestType.GET,
+                "api/pools",
+                headers={'Content-Type': 'application/json'}
+            )
+            return json.loads(response.decode('utf-8'))
 
     def _get_groups(self):
         """
         This method updates the set of groups tracked by the service
         """
-        response = self.send_http_request(
-            HttpRequestType.GET,
-            "api/groups",
-            headers={'Content-Type': 'application/json'}
-        )
-        return json.loads(response.decode('utf-8'))
+        if self._get_use_deadline_cmd(): # if self._use_deadline_command:
+            return DeadlineCommand().get_groups()
+        else:
+            response = self.send_http_request(
+                HttpRequestType.GET,
+                "api/groups",
+                headers={'Content-Type': 'application/json'}
+            )
+            return json.loads(response.decode('utf-8'))
 
     def _register_job(self, job_object, deadline_job_id=None):
         """
@@ -320,31 +346,38 @@ class DeadlineService(metaclass=_Singleton):
 
         self._validate_job_info(job_data["JobInfo"])
 
-        try:
-            response = self.send_http_request(
-                HttpRequestType.POST,
-                "api/jobs",
-                payload=json.dumps(job_data).encode('utf-8'),
-                headers={'Content-Type': 'application/json'}
-            )
-
-        except DeadlineServiceError as exp:
-            logger.error(
-                f"An error occurred submitting {job_object} to Deadline host `{self.host}`.\n\t{str(exp)}"
-            )
-            self._failed_jobs.add(job_object)
+        if self._get_use_deadline_cmd(): # if self._use_deadline_command:
+            # Submit the job to the Deadline server using the Deadline command
+            # Todo: Add support for the Deadline command
+            job_id = DeadlineCommand().submit_job(job_data)
 
         else:
+            # Submit the job to the Deadline server using the HTTP API
             try:
-                response = json.loads(response.decode('utf-8'))
+                response = self.send_http_request(
+                    HttpRequestType.POST,
+                    "api/jobs",
+                    payload=json.dumps(job_data).encode('utf-8'),
+                    headers={'Content-Type': 'application/json'}
+                )
 
-            # If an error occurs trying to decode the json data, most likely an error occurred server side thereby
-            # returning a string instead of the data requested.
-            # Raise the decoded error
-            except Exception as err:
-                raise DeadlineServiceError(f"An error occurred getting the server data:\n\t{response.decode('utf-8')}")
+            except DeadlineServiceError as exp:
+                logger.error(
+                    f"An error occurred submitting {job_object} to Deadline host `{self.host}`.\n\t{str(exp)}"
+                )
+                self._failed_jobs.add(job_object)
 
-            job_id = response.get('_id', None)
+            else:
+                try:
+                    response = json.loads(response.decode('utf-8'))
+
+                # If an error occurs trying to decode the json data, most likely an error occurred server side thereby
+                # returning a string instead of the data requested.
+                # Raise the decoded error
+                except Exception as err:
+                    raise DeadlineServiceError(f"An error occurred getting the server data:\n\t{response.decode('utf-8')}")
+
+                job_id = response.get('_id', None)
             if not job_id:
                 logger.warning(
                     f"No JobId was returned from the server for {job_object}. "
@@ -567,6 +600,25 @@ class DeadlineService(metaclass=_Singleton):
         if "Plugin" not in job_info or (not job_info["Plugin"]):
             raise ValueError("No plugin was specified in the Job info dictionary")
 
+    @staticmethod
+    def _get_use_deadline_cmd():
+        """
+        Returns the deadline command flag settings from the unreal project settings
+        :return: Deadline command settings unreal project
+        """
+        try:
+            # This will be set on the deadline editor project settings
+            deadline_settings = unreal.get_default_object(unreal.DeadlineServiceEditorSettings)
+
+        # Catch any other general exceptions
+        except Exception as exc:
+            unreal.log(
+                f"Caught Exception while getting use deadline command flag. Error: {exc}"
+            )
+
+        else:
+            return deadline_settings.deadline_command
+    
     @staticmethod
     def _get_deadline_host():
         """
