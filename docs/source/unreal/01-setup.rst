@@ -23,7 +23,7 @@ To enable the plugin:
 
     The Deadline service depends on the python **urllib3** library. For legal reasons, this library is not packaged with the plugin.
     If the python interpreter running in the Editor has this library installed, then no further configuration is needed. Otherwise, you will need
-    to download *urllib3* via an external source and copy the site packages into the **Content/Python/Lib/<Platform>/** directory in the **EpicDeadlineService** plugin.
+    to download *urllib3* via an external source and copy the site packages into the **Content/Python/Lib/<Platform>/** directory in the **UnrealDeadlineService** plugin.
     ("Platform" on a windows operating system is **Win64**). The Editor will automatically load any python libraries in the specified path.
 
 .. image:: _images/unreal_deadline_plugins_browser.png

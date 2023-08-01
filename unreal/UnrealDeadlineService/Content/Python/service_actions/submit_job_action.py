@@ -14,7 +14,7 @@ import unreal
 
 # Editor Utility Widget path
 # NOTE: This is very fragile and can break if naming or pathing changes
-EDITOR_UTILITY_WIDGET = "/EpicDeadlineService/Widgets/DeadlineJobSubmitter"
+EDITOR_UTILITY_WIDGET = "/UnrealDeadlineService/Widgets/DeadlineJobSubmitter"
 
 
 def _launch_job_submitter():

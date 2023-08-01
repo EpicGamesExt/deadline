@@ -5,7 +5,7 @@ in the repository.
 > **_Note:_** 
 > This plugin has a dependency on `urllib3` that is not packaged with this 
 > repository. To resolve this, execute the `requirements.txt` file in the 
-> `unreal/EpicDeadlineService/Content/Python/Lib` directory and save the `urllib3` 
+> `unreal/UnrealDeadlineService/Content/Python/Lib` directory and save the `urllib3` 
 > site packages in the `Win64` directory of the above path. 
 > The engine will automatically add this library to the Python path and make it 
 > available to the Python interpreter.

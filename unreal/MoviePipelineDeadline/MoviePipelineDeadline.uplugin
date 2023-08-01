@@ -30,7 +30,7 @@
 			"Enabled": true
 		},
 		{
-		    "Name": "EpicDeadlineService",
+		    "Name": "UnrealDeadlineService",
 		    "Enabled": true
 		}
 	],
