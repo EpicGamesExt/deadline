@@ -2,9 +2,9 @@
 .idea/*
 docs/build/*
 *.pyc
-unreal/EpicDeadlineService/Content/Python/Lib/Win64/*
+unreal/UnrealDeadlineService/Content/Python/Lib/Win64/*
 unreal/MoviePipelineDeadline/Intermediate/*
 unreal/MoviePipelineDeadline/Binaries/*
-unreal/EpicDeadlineService/Intermediate/*
-unreal/EpicDeadlineService/Binaries/*
+unreal/UnrealDeadlineService/Intermediate/*
+unreal/UnrealDeadlineService/Binaries/*
 *.old
