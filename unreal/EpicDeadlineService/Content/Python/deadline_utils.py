@@ -163,9 +163,6 @@ def get_deadline_info_from_preset(job_preset=None, job_preset_struct=None):
     if preset_struct:
         # Get the Job Info and plugin Info
         try:
-            preset_data = preset_library.get_job_info_preset_json_string(preset_name)
-            if not preset_data:
-                raise RuntimeError(f"An error occured while fetching {preset_name}.\nIs the name \"{preset_name}\" in your preset library?")
             job_info = dict(unreal.DeadlineServiceEditorHelpers.get_deadline_job_info(preset_struct))
 
             plugin_info = dict(unreal.DeadlineServiceEditorHelpers.get_deadline_plugin_info(preset_struct))
