@@ -1,4 +1,5 @@
 # Copyright Epic Games, Inc. All Rights Reserved
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 
 from System.Collections.Specialized import StringCollection
 from System.IO import StreamWriter, Path
@@ -63,9 +64,12 @@ def submit_job(name, job_info, plugin_info, aux_files=None):
         for scene_file in aux_files:
             args.Add(scene_file)
 
-    # Submit the job
-    results = ClientUtils.ExecuteCommandAndGetOutput(args)
-
+    if True:
+        results = "Submissions through the monitor are disabled for Unreal Engine 5 plugin"
+    else:
+        # Submit the job
+        results = ClientUtils.ExecuteCommandAndGetOutput(args)
+    
     # TODO: Return the Job ID and results
 
     return results

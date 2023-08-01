@@ -133,36 +133,42 @@ def format_plugin_info_json_string(json_string):
         plugin_info = info["pluginInfo"]
 
     except Exception as err:
-        raise RuntimeError(f"An error occurred formatting the Job Info string. \n\t{err}")
-
+        raise RuntimeError(f"An error occurred formatting the Plugin Info string. \n\t{err}")
+    
     # The plugin info is listed under the `plugin_info` key.
     # The json string keys are camelCased on struct conversion to json.
     return plugin_info
 
 
-def get_deadline_info_from_preset(preset_name, preset_library):
+def get_deadline_info_from_preset(job_preset=None, job_preset_struct=None):
     """
-    This method returns the job info and plugin info from a deadline preset library
-    :param str preset_name: The string preset
-    :param unreal.DeadlineJobPresetLibrary preset_library: Deadline preset library
+    This method returns the job info and plugin info from a deadline preset
+    :param unreal.DeadlineJobPreset job_preset:  Deadline preset asset
+    :param unreal.DeadlineJobPresetStruct job_preset_struct: The job info and plugin info in the job preset
     :return: Returns a tuple with the job info and plugin info dictionary
     :rtype: Tuple
     """
+
     job_info = {}
     plugin_info = {}
+    preset_struct = None
 
     # TODO: Make sure the preset library is a loaded asset
-    if preset_library is not None:
+    if job_preset is not None:
+        preset_struct = job_preset.job_preset_struct
 
+    if job_preset_struct is not None:
+        preset_struct = job_preset_struct
+
+    if preset_struct:
         # Get the Job Info and plugin Info
         try:
-            job_info = format_job_info_json_string(
-                preset_library.get_job_info_preset_json_string(preset_name)
-            )
+            preset_data = preset_library.get_job_info_preset_json_string(preset_name)
+            if not preset_data:
+                raise RuntimeError(f"An error occured while fetching {preset_name}.\nIs the name \"{preset_name}\" in your preset library?")
+            job_info = dict(unreal.DeadlineServiceEditorHelpers.get_deadline_job_info(preset_struct))
 
-            plugin_info = format_plugin_info_json_string(
-                preset_library.get_plugin_info_preset_json_string(preset_name)
-            )
+            plugin_info = dict(unreal.DeadlineServiceEditorHelpers.get_deadline_plugin_info(preset_struct))
 
         # Fail the submission if any errors occur
         except Exception as err:

@@ -1,4 +1,5 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
+
 #pragma once
 
 #include "Engine/DeveloperSettings.h"
@@ -8,7 +9,7 @@
 * Project-wide settings for the Deadline Service.
 */
 UCLASS(BlueprintType, config = Editor, defaultconfig, meta = (DisplayName = "Deadline Service"))
-class UDeadlineServiceEditorSettings : public UDeveloperSettings
+class DEADLINESERVICE_API UDeadlineServiceEditorSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 
@@ -18,6 +19,21 @@ public:
 	virtual FName GetContainerName() const override { return FName("Project"); }
 	/** Gets the category for the settings, some high level grouping like, Editor, Engine, Game...etc. */
 	virtual FName GetCategoryName() const override { return FName("Plugins"); }
+	
+	/** UObject interface */
+	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override
+	{
+		Super::PostEditChangeProperty(PropertyChangedEvent);
+		SaveConfig();
+	}
+
+	/**
+	* Toggle use Deadline command for submission.
+	* If used Deadline command preempts use of the web service.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")
+	bool bDeadlineCommand = true;
+
 
 	/**
 	* What is the host name for the Deadline Server that the REST API is running on?
@@ -26,11 +42,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")
 	FString DeadlineHost;
 
-	/*
-	 * A mapping of script categories to a directory on disk. This is used by dropdown menus
-	 * so a full path does not have to be specified
-	 */
+	/**
+	* The name of the plugin to load in Deadline. Usually the default is used.
+	*/
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")
-	TMap<FString, FString> ScriptCategoryMappings;
+	FString PluginName = "UnrealEngine";
 
 };

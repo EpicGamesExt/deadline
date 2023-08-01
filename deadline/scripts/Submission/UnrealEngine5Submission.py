@@ -16,7 +16,7 @@ SCRIPT_DIALOG = None
 SETTINGS = None
 
 # Add the plugin directory to the python path
-path = os.path.join(RepositoryUtils.GetCustomPluginsDirectory(), "libs", "deadline_shared")
+path = os.path.join(RepositoryUtils.GetPluginsDirectory(), "UnrealEngine5", "deadline_shared")
 
 if path not in sys.path:
     print("Adding `{path}` to python path".format(path=path))
@@ -214,6 +214,7 @@ def __main__(*args):
 
     SCRIPT_DIALOG.AddControlToGrid( "FramesLabel", "LabelControl", "Frame List", 10, 0, "The list of frames to render.", False )
     SCRIPT_DIALOG.AddControlToGrid( "FramesBox", "TextControl", "", 10, 1 )
+    SCRIPT_DIALOG.SetValue( "FramesBox", 0 )
 
     SCRIPT_DIALOG.AddControlToGrid( "ChunkSizeLabel", "LabelControl", "Frames Per Task", 11, 0, "This is the number of frames that will be rendered at a time for each job task.", False )
     SCRIPT_DIALOG.AddRangeControlToGrid( "ChunkSizeBox", "RangeControl", 1, 1, 1000000, 0, 1, 11, 1 )
@@ -298,7 +299,11 @@ def __main__(*args):
         0,
         "Sync Perforce",
     )
+    # Comment out to enable perforce
+    SCRIPT_DIALOG.SetEnabled("PerforceBox", False)
+
     perforce_box.ValueModified.connect(_enable_perforce)
+
     SCRIPT_DIALOG.AddControlToGrid(
         "StreamLabel",
         "LabelControl",
@@ -309,6 +314,7 @@ def __main__(*args):
         False,
     )
     SCRIPT_DIALOG.AddControlToGrid("StreamBox", "TextControl", "", 2, 1)
+
     SCRIPT_DIALOG.AddControlToGrid(
         "ProjectLabel",
         "LabelControl",
@@ -424,7 +430,7 @@ def _enable_perforce(*args):
     """Enable Perforce Sync"""
     global SCRIPT_DIALOG
 
-    perforce = bool(SCRIPT_DIALOG.GetValue("PerforceBox"))
+    perforce = bool(SCRIPT_DIALOG.GetValue("PerforceBox")) 
 
     SCRIPT_DIALOG.SetEnabled("StreamBox", perforce)
     SCRIPT_DIALOG.SetEnabled("ProjectBox", perforce)
@@ -435,7 +441,6 @@ def _enable_perforce(*args):
 
 
 def submit_button_pressed(*args):
-
     frames = SCRIPT_DIALOG.GetValue("FramesBox")
     if not FrameUtils.FrameRangeValid(frames):
         SCRIPT_DIALOG.ShowMessageBox(f"Frame range `{frames}` is not valid" "Error")
@@ -443,7 +448,7 @@ def submit_button_pressed(*args):
 
     # Create job dictionary
     job_info = {
-        "Plugin": "UnrealEngine",
+        "Plugin": "UnrealEngine5",
         "Name": SCRIPT_DIALOG.GetValue("NameBox"),
         "Comment": SCRIPT_DIALOG.GetValue("CommentBox"),
         "Department": SCRIPT_DIALOG.GetValue("DepartmentBox"),
@@ -499,7 +504,7 @@ def submit_button_pressed(*args):
         "CommandLineArguments": SCRIPT_DIALOG.GetValue("ArgsBox"),
         "CommandLineMode": "true"
     }
-
-    results = submit_deadline_job.submit_job("UnrealEngine", job_info,plugin_info)
+    print("Submitting job")
+    results = submit_deadline_job.submit_job("UnrealEngine5", job_info,plugin_info)
 
     SCRIPT_DIALOG.ShowMessageBox(results, "Submission Results")

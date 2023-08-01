@@ -2,291 +2,224 @@
 #pragma once
 
 #include "Engine/DataAsset.h"
-#include "DeadlineServiceEditorSettings.h"
 #include "DeadlineJobDataAsset.generated.h"
 
 // Forward declarations
-class UDeadlineJobPresetLibrary;
+class UDeadlineJobPreset;
 class UScriptCategories;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogDeadlineDataAsset, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(LogDeadlineStruct, Log, All);
 
-
-/*
- * Deadline Pre Post script struct
- */
-USTRUCT(BlueprintType)
-struct FPrePostScriptStruct
-{
-	GENERATED_BODY()
-
-	/** Script Category from project settings pre post script mapping */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (GetOptions="DeadlineService.ScriptCategories.GetScriptCategories"), Category = "Scripts")
-	FString ScriptCategory;
-
-	/** Name of the script to execute */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Scripts")
-	FString ScriptName;
-
-};
-
-
-/**
- * A class to return the script categories from the project settings
- */
-UCLASS()
-class UScriptCategories : public UObject
-{
-	GENERATED_BODY()
-public:
-
-	/** Returns a list of available script categories.
-	 * To make this available to the GetOptions meta tag on a property, we need to make this a UFUNCTION
-	* Note: This list generally will come from Deadline */
-	UFUNCTION()
-	static TArray<FString> GetScriptCategories()
-	{
-		const UDeadlineServiceEditorSettings* EditorSettings = GetDefault<UDeadlineServiceEditorSettings>();
-
-		TArray<FString> ScriptCategories;
-
-		if (EditorSettings->ScriptCategoryMappings.Num() > 0)
-		{
-			EditorSettings->ScriptCategoryMappings.GenerateKeyArray(ScriptCategories);
-		}
-		
-		return ScriptCategories;
-	}
-
-};
-
 /**
  * Deadline Job Info Struct
  */
 USTRUCT(BlueprintType)
-struct FDeadlineJobInfoStruct
+struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 {
+	/**
+	 * If any of these variable names must change for any reason, be sure to update the string literals in the source as well
+	 * such as in DeadlineJobDataAsset.cpp and MoviePipelineDeadline/DeadlineJobPresetCustomization.cpp, et al.
+	 */
 	GENERATED_BODY()
+
+	/** Specifies the name of the job. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Description")
+	FString Name = "Untitled";
+
+	/** Specifies a comment for the job. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Description", meta = (MultiLine = true))
+	FString Comment;
+
+	/**
+	 * Specifies the department that the job belongs to.
+	 * This is simply a way to group jobs together, and does not affect rendering in any way.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Description")
+	FString Department;
+
+	/** Specifies the pool that the job is being submitted to. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
+	FString Pool;
+
+	/**
+	 * Specifies the secondary pool that the job can spread to if machines are available.
+	 * If not specified, the job will not use a secondary pool.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
+	FString SecondaryPool;
+
+	/** Specifies the group that the job is being submitted to. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
+	FString Group;
+
+	/** Specifies the priority of a job with 0 being the lowest and 100 being the highest unless configured otherwise in Repository Options. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options", meta = (ClampMin = 0))
+	int32 Priority = 50;
+
+	/** Specifies the time, in seconds, a Worker has to render a task before it times out. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options", meta = (ClampMin = 0))
+	int32 TaskTimeoutSeconds = 0;
+	
+	/**
+	 * If true, a Worker will automatically figure out if it has been rendering too long based on some
+	 * Repository Configuration settings and the render times of previously completed tasks.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
+	bool bEnableAutoTimeout = false;
+
 
 	/** Deadline Plugin used to execute the current job. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plugin")
-	FString Plugin = TEXT("UnrealEngine");
+	FString Plugin = TEXT("UnrealEngine5");
 
-	/** Deadline Auxiliary files to upload for the current job */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Aux Files")
-	TArray<FFilePath> AuxFiles;
+	/**
+	 * Specifies the maximum number of tasks that a Worker can render at a time.
+	 * This is useful for script plugins that support multithreading.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options", meta = (ClampMin = 1, ClampMax = 16))
+	int32 ConcurrentTasks = 1;
+	
+	/** If ConcurrentTasks is greater than 1, setting this to true will ensure that a Worker will not dequeue more tasks than it has processors. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
+	bool bLimitConcurrentTasksToNumberOfCpus = true;
 
-	/** Job BatchName. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Options")
-	FString BatchName;
 
-    /** Job name. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Options")
-	FString Name;
+	/** Specifies the maximum number of machines this job can be rendered on at the same time (0 means unlimited). */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options", meta = (ClampMin = 0))
+	int32 MachineLimit = 0;
 
-    /** Job comments. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Options")
-	FString Comment;
+	/** If true, the machine names in MachineList will be avoided. todo */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options", DisplayName = "Machine List Is A Deny List")
+	bool bMachineListIsADenyList = false;
 
-    /** Job department. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Options")
-	FString Department;
+	/** Job machines to use. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
+	FString MachineList;
 
-	/** Job pool. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Options")
-	FString Pool;
+	/** Specifies the limit groups that this job is a member of. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
+	FString LimitGroups;
 
-	/** Secondary job pool. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Options")
-	FString SecondaryPool;
+	/**
+	 * Specifies what jobs must finish before this job will resume (default = blank).
+	 * These dependency jobs must be identified using their unique job ID,
+	 * which is outputted after the job is submitted, and can be found in the Monitor in the “Job ID” column.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
+	FString JobDependencies;
 
-	/** Job group. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Options")
-	FString Group;
-
-	/** Job Frames. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Options")
+	/**
+	 * Specifies the frame range of the render job.
+	 * See the Frame List Formatting Options in the Job Submission documentation for more information.
+	 */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
 	FString Frames = TEXT("0");
 
-	/** Job user. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Options")
+	/** Specifies how many frames to render per task. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options", meta = (ClampMin = 1))
+	int32 ChunkSize = 1;
+
+	/** Specifies what should happen to a job after it completes. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options", meta = (GetOptions = "GetOnJobCompleteOptions"))
+	FString OnJobComplete = "Nothing";
+
+	/** whether the submitted job should be set to 'suspended' status. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
+	bool bSubmitJobAsSuspended = false;
+
+	/** Specifies the job’s user. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Advanced Job Options")
 	FString UserName;
 
-	/** Pre-Job python render script.
+	/** Specifies an optional name to logically group jobs together. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Advanced Job Options")
+	FString BatchName;
+
+	/**
+	 * Specifies a full path to a python script to execute when the job initially starts rendering.
 	 * Note:
-	 * Select the location and specify the name of the script. Example: `custom_scripts_dir` my_pre_job_script.py
 	 * This location is expected to already be path mapped on the farm else it will fail.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Scripts")
-	FPrePostScriptStruct PreJobScript;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options", meta = (FilePathFilter = "Python files (*.py)|*.py"))
+	FFilePath PreJobScript;
 
-	/** Post-Job python render script.
+	/**
+	 * Specifies a full path to a python script to execute when the job completes.
 	 * Note:
-	 * Select the location and specify the name of the script. Example: `custom_scripts_dir` my_post_job_script.py
 	 * This location is expected to already be path mapped on the farm else it will fail.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Scripts")
-	FPrePostScriptStruct PostJobScript;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options", meta = (FilePathFilter = "Python files (*.py)|*.py"))
+	FFilePath PostJobScript;
 
-	/** Pre-Task python render script.
+	/**
+	 * Specifies a full path to a python script to execute before each task starts rendering.
 	 * Note:
-	 * Select the location and specify the name of the script. Example: `custom_scripts_dir` my_pre_task_script.py
 	 * This location is expected to already be path mapped on the farm else it will fail.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Scripts")
-	FPrePostScriptStruct PreTaskScript;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options", meta = (FilePathFilter = "Python files (*.py)|*.py"))
+	FFilePath PreTaskScript;
 
-	/** Post-Job python render script.
+	/**
+	 * Specifies a full path to a python script to execute after each task completes.
 	 * Note:
-	 * Select the location and specify the name of the script. Example: `custom_scripts_dir` my_post_task_script.py
 	 * This location is expected to already be path mapped on the farm else it will fail.
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Scripts")
-	FPrePostScriptStruct PostTaskScript;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options", meta = (FilePathFilter = "Python files (*.py)|*.py"))
+	FFilePath PostTaskScript;
 
-	/** Key Value pair environment variables to set when the job renders. This is only set in the Deadline environment not the Unreal environment. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Environment Variables")
+	/** Specifies environment variables to set when the job renders. This is only set in the Deadline environment not the Unreal environment. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options")
 	TMap<FString, FString> EnvironmentKeyValue;
 
-	/** Job Extra Info keys used for storing user data on the job. This is split up into unique
-	 * settings as there is a limited amount of settings  */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Job Extra Info")
-	FString ExtraInfo0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Job Extra Info")
-	FString ExtraInfo1;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Job Extra Info")
-	FString ExtraInfo2;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Job Extra Info")
-	FString ExtraInfo3;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Job Extra Info")
-	FString ExtraInfo4;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Job Extra Info")
-	FString ExtraInfo5;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Job Extra Info")
-	FString ExtraInfo6;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Job Extra Info")
-	FString ExtraInfo7;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Job Extra Info")
-	FString ExtraInfo8;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Job Extra Info")
-	FString ExtraInfo9;
+	/** Key Value pair environment variables to set when the job renders. This is only set in the Deadline environment not the Unreal environment. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options")
+	TMap<FString, FString> EnvironmentInfo;
 
 	/** Key-Value pair Job Extra Info keys for storing user data on the job. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Job Extra Info")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options")
 	TMap<FString, FString> ExtraInfoKeyValue;
 
 	/** Replace the Task extra info column names with task extra info value. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Task Extra Info")
-	bool OverrideTaskExtraInfoNames = false;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options")
+	bool bOverrideTaskExtraInfoNames = false;
+	
 	/**
-	 *Key Value pair Task Extra Info keys for storing deadline info. This is split up into unique
+	 * Key Value pair Task Extra Info keys for storing deadline info. This is split up into unique
 	 * settings as there is a limited amount of settings
 	 */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Task Extra Info")
-	FString TaskExtraInfoName0;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Task Extra Info")
-	FString TaskExtraInfoName1;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Task Extra Info")
-	FString TaskExtraInfoName2;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Task Extra Info")
-	FString TaskExtraInfoName3;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Task Extra Info")
-	FString TaskExtraInfoName4;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Task Extra Info")
-	FString TaskExtraInfoName5;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Task Extra Info")
-	FString TaskExtraInfoName6;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Task Extra Info")
-	FString TaskExtraInfoName7;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Task Extra Info")
-	FString TaskExtraInfoName8;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Task Extra Info")
-	FString TaskExtraInfoName9;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options")
+	TMap<FString, FString> TaskExtraInfoNames;
 
 	/** Extra Deadline Job options. Note: Match the naming convention on Deadline's Manual Job Submission website for the options. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Options")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Advanced Job Options")
 	TMap<FString, FString> ExtraJobOptions;
-	
-};
-
-
-/**
- * Deadline Plugin Info Struct
- */
-USTRUCT(BlueprintType)
-struct FDeadlinePluginInfoStruct
-{
-	GENERATED_BODY()
 
 	/** Deadline Plugin info key value pair. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plugin Info")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Advanced Job Options")
 	TMap<FString, FString> PluginInfo;
-	
-};
-
-/*
- * Deadline job preset struct. Allows compiling similar job info and plugin info as a single entity.
- */
-USTRUCT(BlueprintType)
-struct FDeadlineJobPresetStruct
-{
-	GENERATED_BODY()
-
-	/** Deadline Job Preset struct. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Info")
-	FDeadlineJobInfoStruct JobInfoPreset;
-
-	/** Deadline plugin Preset struct. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plugin Info")
-	FDeadlinePluginInfoStruct PluginInfoPreset;
-	
 };
 
 
 /**
- * Deadline Job and Plugin Info Preset Library. This data asset saves a mapping of presets that can be
- * selected depending on the task needed to execute a job
+ * Deadline Job Preset
  */
 UCLASS(BlueprintType)
-class UDeadlineJobPresetLibrary : public UDataAsset
+class DEADLINESERVICE_API UDeadlineJobPreset : public UDataAsset
 {
 	GENERATED_BODY()
 public:
 
-	/** Mapping of Deadline job presets */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Presets")
-	TMap<FString, FDeadlineJobPresetStruct> DeadlineJobPresets;
+	UDeadlineJobPreset();
 
-	/*
-	 * Returns a job info from the specified preset library as a Json String
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Job Info preset")
-	FString GetJobInfoPresetJsonString(FString PresetName);
+	/** Job preset struct */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Preset")
+	FDeadlineJobPresetStruct JobPresetStruct;
 
-	/*
-	 * Returns a plugin info from the specified preset library as a Json String
-	 */
-	UFUNCTION(BlueprintCallable, Category = "Plugin Info preset")
-	FString GetPluginInfoPresetJsonString(FString PresetName);
-	
+	UFUNCTION()
+	static TArray<FString> GetOnJobCompleteOptions()
+	{
+		return {"Nothing","Delete","Archive"};
+	}
+
 };

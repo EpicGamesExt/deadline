@@ -68,9 +68,8 @@ This script has several modes:
 
         *--batch_name*: This sets the batch name on the executor.
 
-        *--preset_library*: The preset library name for Deadline job/plugin info
+        *--deadline_job_preset*: The deadline preset for Deadline job/plugin info
 
-        *--preset_name*: The preset name in the preset library to use.
 
 Editor CMD window:
     .. code-block:: shell
@@ -137,14 +136,8 @@ if __name__ == "__main__":
     )
 
     remote_group.add_argument(
-        "--preset_library",
-        help="The remote preset library to use when rendering the current job."
-    )
-
-    remote_group.add_argument(
-        "--preset_name",
-        type=str,
-        help="The preset name in the preset library to use when rendering the current job."
+        "--deadline_job_preset",
+        help="The remote job preset to use when rendering the current job."
     )
 
     # Setup output override groups for the jobs
