@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Engine/DataAsset.h"
-#include "DeadlineJobDataAsset.generated.h"
+#include "DeadlineJobPreset.generated.h"
 
 // Forward declarations
 class UDeadlineJobPreset;
@@ -198,8 +198,8 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 /**
  * Deadline Job Preset
  */
-UCLASS(BlueprintType)
-class DEADLINESERVICE_API UDeadlineJobPreset : public UDataAsset
+UCLASS(BlueprintType, DontCollapseCategories)
+class DEADLINESERVICE_API UDeadlineJobPreset : public UObject
 {
 	GENERATED_BODY()
 public:

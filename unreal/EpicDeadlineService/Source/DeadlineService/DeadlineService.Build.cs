@@ -9,6 +9,7 @@ public class DeadlineService : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(
 			new string[] {
+				"AssetDefinition",
 				"Core",
 				"CoreUObject",
 				"EditorStyle",
@@ -21,10 +22,5 @@ public class DeadlineService : ModuleRules
 				"Slate"
 			}
 		);
-
-		PublicDependencyModuleNames.AddRange(
-			new string[] {
-            }
-        );
 	}
 }

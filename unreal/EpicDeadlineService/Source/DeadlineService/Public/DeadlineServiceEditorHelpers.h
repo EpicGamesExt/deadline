@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "DeadlineJobDataAsset.h"
+#include "DeadlineJobPreset.h"
 #include "DeadlineServiceEditorSettings.h"
 
 #include "DeadlineServiceEditorHelpers.generated.h"
