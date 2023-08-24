@@ -4,7 +4,7 @@
 
 #include "Engine/DeveloperSettings.h"
 
-#include "DeadlineJobDataAsset.h"
+#include "DeadlineJobPreset.h"
 
 #include "MoviePipelineDeadlineSettings.generated.h"
 
