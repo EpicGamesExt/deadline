@@ -209,7 +209,6 @@ class DEADLINESERVICE_API UDeadlineJobPreset : public UDataAsset
 {
 	GENERATED_BODY()
 public:
-
 	UDeadlineJobPreset();
 
 	/** Job preset struct */
@@ -221,5 +220,12 @@ public:
 	{
 		return {"Nothing","Delete","Archive"};
 	}
+
+protected:
+
+	/**
+	 * Sets up the PluginInfo struct for the FDeadlineJobPresetStruct.
+	 */
+	void SetupPluginInfo();
 
 };
