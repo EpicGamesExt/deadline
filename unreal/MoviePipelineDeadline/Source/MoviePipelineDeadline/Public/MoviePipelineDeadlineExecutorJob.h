@@ -3,7 +3,7 @@
 #pragma once
 
 #include "MoviePipelineQueue.h"
-#include "DeadlineJobDataAsset.h"
+#include "DeadlineJobPreset.h"
 
 #include "MoviePipelineDeadlineExecutorJob.generated.h"
 

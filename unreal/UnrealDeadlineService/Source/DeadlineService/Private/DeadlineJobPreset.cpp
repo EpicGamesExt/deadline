@@ -1,13 +1,13 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "DeadlineJobDataAsset.h"
+#include "DeadlineJobPreset.h"
 
 #include "DeadlineServiceEditorSettings.h"
 
 #include "Widgets/Layout/SBorder.h"
 #include "Widgets/SBoxPanel.h"
 
-#include UE_INLINE_GENERATED_CPP_BY_NAME(DeadlineJobDataAsset)
+#include UE_INLINE_GENERATED_CPP_BY_NAME(DeadlineJobPreset)
 
 DEFINE_LOG_CATEGORY(LogDeadlineDataAsset);
 DEFINE_LOG_CATEGORY(LogDeadlineStruct);
