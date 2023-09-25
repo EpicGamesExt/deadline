@@ -220,4 +220,11 @@ public:
 		return {"Nothing","Delete","Archive"};
 	}
 
+protected:
+
+	/**
+	 * Sets up the PluginInfo struct for the FDeadlineJobPresetStruct.
+	 */
+	void SetupPluginInfo();
+
 };
