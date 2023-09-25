@@ -49,7 +49,7 @@ public:
 	FString PluginName = "UnrealEngine";
 
 	/**
-	* If you'd like the plugin to use a separate executable variant when pre-populating PluginInfo, specify it here.
+	* If you'd like the plugin to use a separate executable variant when creating a new DeadlineJobDataAsset, specify it here.
 	* For example, to use UnrealEditor-Cmd.exe instead of UnrealEditor.exe, specify "-Cmd".
 	* Leave blank to use no variant.
 	*/
