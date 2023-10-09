@@ -73,7 +73,7 @@ Here is a complete code snippet for creating a deadline job with job and plugin 
 
     # Create a deadline job object. The Deadline service uses this object to track submitted job. This also
     # allows you to retrieve information about the submitted job without necessarily knowing the deadline job ID
-    deadline_job = DeadlineJob(job_info, plugin-info)
+    deadline_job = DeadlineJob(job_info, plugin_info)
 
     # Get the Deadline service
     # Submit the deadline job. This returns the deadline job id from the server. Be sure to handle any exceptions that
@@ -88,10 +88,11 @@ Here is a complete code snippet for creating a deadline job with job and plugin 
 .. note::
     Although we used a data asset in the code snippet, you can create a **DeadlineJob** from a custom job info and plugin info dictionary built on the fly.
     This is useful when you do not have any real use case for a data asset and your job info and plugin info is highly dynamic.
+
     The Deadline Service also has other helpful features like:
 
         * **Unreal Toolbar Menu Action**: This allows you to create a custom menu in the Deadline menu bar on the Unreal main menu.
-        * **Deadline RPC Connection**: This allows you to create a bidirectional communication with a deadline process on a remote host.
+        * **Deadline RPC Connection**: This creates a bidirectional communication between an unreal process and a deadline process on the remote host.
 
 Advanced
 -----------
@@ -100,14 +101,14 @@ Create a Custom Toolbar Menu Action
 +++++++++++++++++++++++++++++++++++
 
 You can create a toolbar menu action on the Editor's main menu toolbar using the deadline service module with this Python snippet.
-This will create a menu under Deadline. See :ref:`Toolbar menu API<toolbar_menu_api>`.
+This will create a submenu under the **Deadline** menu on the Editor Toolbar. See :ref:`Toolbar menu API<toolbar_menu_api>`.
 
 .. code-block:: python
 
     from deadline_menus import DeadlineToolBarMenu
 
     def _execute_action():
-    """Callback method to execute an action"""
+    """Callback method to execute an action. """
 
         print("Executing command")
 
@@ -135,7 +136,7 @@ This will create a menu under Deadline. See :ref:`Toolbar menu API<toolbar_menu_
 
 .. note::
     It is recommended you create an *init_unreal.py* file in your plugin and use this file to auto register your menu action
-    on startup.
+    on startup by executing the *register_menu_action* function.
 
 
 |
@@ -143,7 +144,7 @@ This will create a menu under Deadline. See :ref:`Toolbar menu API<toolbar_menu_
 Create a Deadline RPC connection
 ++++++++++++++++++++++++++++++++
 
-This python snippet shows how to create an RPC connection to an external Deadline process. This
+This python snippet shows how to create  a script in unreal that opens an RPC connection between an unreal process and a Deadline process on the remote host. This
 is typically useful when you want to process multiple jobs/actions within a single unreal session. Projects with long
 editor startup times can benefit from this behavior. See :ref:`Base RPC API<rpc_api>`.
 

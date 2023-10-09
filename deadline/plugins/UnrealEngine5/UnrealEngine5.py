@@ -321,9 +321,6 @@ class UnrealEngineManagedProcess(ManagedProcess):
 
     """
 
-    # Elapsed time to check for connection
-    PROCESS_WAIT_TIME = 180  # 3 minutes
-
     def __init__(self, process_name, deadline_plugin, deadline_rpc_manager):
         """
         Constructor
@@ -341,6 +338,9 @@ class UnrealEngineManagedProcess(ManagedProcess):
         self._temp_rpc_client = None
         self._name = process_name
         self._executable_path = None
+
+        # Elapsed time to check for connection
+        self._process_wait_time = int(self._deadline_plugin.GetConfigEntryWithDefault("RPCWaitTime", "300"))
 
     def clean_up(self):
         """
@@ -438,7 +438,7 @@ class UnrealEngineManagedProcess(ManagedProcess):
             # unreal process client has connected. It is very important that
             # a connection is established by the client to allow this process
             # to execute.
-            while round(time.time() - start_time) <= self.PROCESS_WAIT_TIME:
+            while round(time.time() - start_time) <= self._process_wait_time:
                 try:
                     # keep checking to see if a client has connected
                     if self._temp_rpc_client.is_connected():
@@ -478,7 +478,10 @@ class UnrealEngineManagedProcess(ManagedProcess):
         """
         self._deadline_plugin.LogInfo("Setting up Render Executable")
 
-        executable = self._deadline_plugin.GetPluginInfoEntry("Executable")
+        executable = self._deadline_plugin.GetEnvironmentVariable("UnrealExecutable")
+
+        if not executable:
+            executable = self._deadline_plugin.GetPluginInfoEntry("Executable")
 
         # Resolve any path mappings required
         executable = RepositoryUtils.CheckPathMapping(executable)
@@ -516,8 +519,8 @@ class UnrealEngineManagedProcess(ManagedProcess):
         if not uproject:
             uproject = self._deadline_plugin.GetPluginInfoEntry("ProjectFile")
 
-            # Get any path mappings required. Expects this to be a full path
-            uproject = RepositoryUtils.CheckPathMapping(uproject)
+        # Get any path mappings required. Expects this to be a full path
+        uproject = RepositoryUtils.CheckPathMapping(uproject)
 
         # Get the project root path
         project_root = self._deadline_plugin.GetEnvironmentVariable("ProjectRoot")
@@ -682,10 +685,13 @@ class UnrealEngineCmdManagedProcess(ManagedProcess):
 
         self._deadline_plugin.LogInfo("Setting up Render Executable")
 
+        executable = self._deadline_plugin.GetEnvironmentVariable("UnrealExecutable")
+
+        if not executable:
+            executable = self._deadline_plugin.GetPluginInfoEntry("Executable")
+
         # Get the executable from the plugin
-        executable = RepositoryUtils.CheckPathMapping(
-            self._deadline_plugin.GetPluginInfoEntry("Executable").strip()
-        )
+        executable = RepositoryUtils.CheckPathMapping(executable)
         # Get the project root path
         project_root = self._deadline_plugin.GetProcessEnvironmentVariable(
             "ProjectRoot"
@@ -716,10 +722,16 @@ class UnrealEngineCmdManagedProcess(ManagedProcess):
         """
         self._deadline_plugin.LogInfo("Setting up Render Arguments")
 
-        # Get the project setup
-        project_file = RepositoryUtils.CheckPathMapping(
-            self._deadline_plugin.GetPluginInfoEntry("ProjectFile").strip()
-        )
+        # Look for any unreal uproject paths in the process environment. This
+        # assumes a previous process resolves a uproject path and makes it
+        # available.
+        project_file = self._deadline_plugin.GetEnvironmentVariable("UnrealUProject")
+
+        if not project_file:
+            project_file = self._deadline_plugin.GetPluginInfoEntry("ProjectFile")
+
+        # Get any path mappings required. Expects this to be a full path
+        project_file = RepositoryUtils.CheckPathMapping(project_file)
 
         # Get the project root path
         project_root = self._deadline_plugin.GetProcessEnvironmentVariable(
