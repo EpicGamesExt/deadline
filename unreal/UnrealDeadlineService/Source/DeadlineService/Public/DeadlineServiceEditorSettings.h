@@ -48,4 +48,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")
 	FString PluginName = "UnrealEngine";
 
+	/**
+	* If you'd like the plugin to use a separate executable variant when creating a new DeadlineJobPreset, specify it here.
+	* For example, to use UnrealEditor-Cmd.exe instead of UnrealEditor.exe, specify "-Cmd".
+	* Leave blank to use no variant.
+	*/
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, config, Category = "Deadline")
+	FString DesiredExecutableVariant = "-Cmd";
+
 };

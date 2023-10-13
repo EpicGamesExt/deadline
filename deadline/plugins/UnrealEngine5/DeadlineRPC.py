@@ -1,7 +1,7 @@
 #  Copyright Epic Games, Inc. All Rights Reserved
 
-from deadline_shared.rpc.server import RPCServerThread
-from deadline_shared.rpc.base_server import BaseRPCServerManager
+from ue_utils.rpc.server import RPCServerThread
+from ue_utils.rpc.base_server import BaseRPCServerManager
 
 from Deadline.Scripting import RepositoryUtils
 
@@ -303,7 +303,7 @@ class DeadlineRPCServerManager(BaseRPCServerManager):
         NOTE: This behavior is implied
         :return: RPC client proxy
         """
-        from deadline_shared.rpc.client import RPCClient
+        from ue_utils.rpc.client import RPCClient
 
         # Get the port the server is using
         server = self.get_server()

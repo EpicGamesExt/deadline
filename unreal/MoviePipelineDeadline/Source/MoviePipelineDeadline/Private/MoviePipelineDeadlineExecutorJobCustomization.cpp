@@ -18,7 +18,7 @@ void FMoviePipelineDeadlineExecutorJobCustomization::CustomizeDetails(IDetailLay
 	MrpCategory.GetDefaultProperties(OutMrpCategoryProperties);
 
 	// We hide these properties because we want to use "Name", "UserName" and "Comment" from the Deadline preset
-	const TArray<FName> PropertiesToHide = {"JobName", "Author", "Comment"};
+	const TArray<FName> PropertiesToHide = {"JobName", "Author"};
 
 	for (const TSharedRef<IPropertyHandle>& PropertyHandle : OutMrpCategoryProperties)
 	{
