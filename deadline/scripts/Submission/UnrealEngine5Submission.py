@@ -16,7 +16,7 @@ SCRIPT_DIALOG = None
 SETTINGS = None
 
 # Add the plugin directory to the python path
-path = os.path.join(RepositoryUtils.GetPluginsDirectory(), "UnrealEngine5", "deadline_shared")
+path = os.path.join(RepositoryUtils.GetPluginsDirectory(), "UnrealEngine5", "ue_utils")
 
 if path not in sys.path:
     print("Adding `{path}` to python path".format(path=path))

@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Engine/DataAsset.h"
-#include "DeadlineJobDataAsset.generated.h"
+#include "DeadlineJobPreset.generated.h"
 
 // Forward declarations
 class UDeadlineJobPreset;
@@ -67,10 +67,9 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 	 */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
 	bool bEnableAutoTimeout = false;
-
-
-	/** Deadline Plugin used to execute the current job. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plugin")
+	
+	/** Deadline Plugin used to execute the current job. */		
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Plugin")		
 	FString Plugin = TEXT("UnrealEngine5");
 
 	/**
@@ -83,7 +82,6 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 	/** If ConcurrentTasks is greater than 1, setting this to true will ensure that a Worker will not dequeue more tasks than it has processors. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options")
 	bool bLimitConcurrentTasksToNumberOfCpus = true;
-
 
 	/** Specifies the maximum number of machines this job can be rendered on at the same time (0 means unlimited). */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Job Options", meta = (ClampMin = 0))
@@ -204,8 +202,8 @@ struct DEADLINESERVICE_API FDeadlineJobPresetStruct
 /**
  * Deadline Job Preset
  */
-UCLASS(BlueprintType)
-class DEADLINESERVICE_API UDeadlineJobPreset : public UDataAsset
+UCLASS(BlueprintType, DontCollapseCategories)
+class DEADLINESERVICE_API UDeadlineJobPreset : public UObject
 {
 	GENERATED_BODY()
 public:
@@ -221,5 +219,12 @@ public:
 	{
 		return {"Nothing","Delete","Archive"};
 	}
+
+protected:
+
+	/**
+	 * Sets up the PluginInfo struct for the FDeadlineJobPresetStruct.
+	 */
+	void SetupPluginInfo();
 
 };
