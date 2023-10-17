@@ -132,9 +132,9 @@ class DeadlineCommand:
         proc.stderr.close()
 
         output = proc.stdout.read()
-        job_id = None
+        job_ids = []
         for line in output.decode("utf_8").split(os.linesep):
             if line.startswith("JobID"):
-                job_id = line.split("=")[1].strip()
-                break
-        return job_id
+                job_ids.append(line.split("=")[1].strip())
+
+        return min(job_ids)
