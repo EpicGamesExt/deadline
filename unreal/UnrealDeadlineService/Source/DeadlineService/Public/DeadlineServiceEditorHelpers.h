@@ -4,6 +4,7 @@
 
 #include "DeadlineJobPreset.h"
 #include "DeadlineServiceEditorSettings.h"
+#include "Kismet/BlueprintFunctionLibrary.h"
 
 #include "DeadlineServiceEditorHelpers.generated.h"
 
