@@ -9,6 +9,7 @@
 #include "IDetailChildrenBuilder.h"
 #include "IDetailGroup.h"
 #include "Widgets/Input/SCheckBox.h"
+#include "Widgets/Layout/SBox.h"
 
 class SEyeCheckBox : public SCompoundWidget
 {
