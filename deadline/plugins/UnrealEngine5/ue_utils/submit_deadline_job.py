@@ -64,11 +64,8 @@ def submit_job(name, job_info, plugin_info, aux_files=None):
         for scene_file in aux_files:
             args.Add(scene_file)
 
-    if True:
-        results = "Submissions through the monitor are disabled for Unreal Engine 5 plugin"
-    else:
-        # Submit the job
-        results = ClientUtils.ExecuteCommandAndGetOutput(args)
+    # Submit the job
+    results = ClientUtils.ExecuteCommandAndGetOutput(args)
     
     # TODO: Return the Job ID and results
 
