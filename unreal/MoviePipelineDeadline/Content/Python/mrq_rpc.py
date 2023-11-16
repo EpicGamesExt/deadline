@@ -76,15 +76,21 @@ class MRQRender(BaseRPC):
                 f"Executing Serialized Pipeline: `{serialized_pipeline}`"
             )
 
-            # create manifest file
-            manifest_dir = os.path.join(
+            # create temp manifest folder
+            movieRenderPipeline_dir = os.path.join(
                 unreal.SystemLibrary.get_project_saved_directory(),
                 "MovieRenderPipeline",
+                "TempManifests",
             )
-            if not os.path.exists(manifest_dir):
-                os.makedirs(manifest_dir)
 
-            manifest_file = os.path.join(manifest_dir, "QueueManifest.utxt")
+            if not os.path.exists(movieRenderPipeline_dir ):
+                os.makedirs(movieRenderPipeline_dir )
+
+            # create manifest file
+            manifest_file = unreal.Paths.create_temp_filename(
+                movieRenderPipeline_dir ,
+                prefix='TempManifest',
+                extension='.utxt')
 
             unreal.log(f"Saving Manifest file `{manifest_file}`")
 
