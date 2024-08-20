@@ -2,7 +2,39 @@
 
 #include "MoviePipelineDeadlineExecutorJob.h"
 
+#include "DeadlineJobPreset.h"
 #include "MoviePipelineDeadlineSettings.h"
+
+#include "Logging/LogMacros.h"
+
+DEFINE_LOG_CATEGORY_STATIC(LogMoviePipelineDeadline, Log, All)
+
+namespace UE::MoviePipelineDeadlineExecutorJob::Private
+{
+	TObjectPtr<UDeadlineJobPreset> GetDefaultJobPreset()
+	{
+		if (const UMoviePipelineDeadlineSettings* MpdSettings = GetDefault<UMoviePipelineDeadlineSettings>())
+		{
+			if (const TObjectPtr<UDeadlineJobPreset> DefaultPreset = MpdSettings->DefaultJobPreset)
+			{
+				return DefaultPreset;
+			}
+		}
+		return nullptr;
+	}
+
+	FDeadlineJobPresetStruct GetDeadlineJobPresetStruct(TObjectPtr<UDeadlineJobPreset> InPreset)
+	{
+		TObjectPtr<UDeadlineJobPreset> Preset = InPreset ? InPreset : GetDefaultJobPreset();
+		if (IsValid(Preset))
+		{
+			return InPreset->JobPresetStruct;
+		}
+
+		UE_LOG(LogMoviePipelineDeadline, Warning, TEXT("Provided Job Preset is empty! Using the default deadline preset struct."));
+		return {};
+	}
+}
 
 UMoviePipelineDeadlineExecutorJob::UMoviePipelineDeadlineExecutorJob()
 		: UMoviePipelineExecutorJob()
@@ -10,13 +42,7 @@ UMoviePipelineDeadlineExecutorJob::UMoviePipelineDeadlineExecutorJob()
 	// If a Job Preset is not already defined, assign the default preset
 	if (!JobPreset)
 	{
-		if (const UMoviePipelineDeadlineSettings* MpdSettings = GetDefault<UMoviePipelineDeadlineSettings>())
-		{
-			if (const TObjectPtr<UDeadlineJobPreset> DefaultPreset = MpdSettings->DefaultJobPreset)
-			{
-				JobPreset = DefaultPreset;
-			}
-		}
+		JobPreset = UE::MoviePipelineDeadlineExecutorJob::Private::GetDefaultJobPreset();
 	}
 }
 
@@ -65,7 +91,7 @@ void UMoviePipelineDeadlineExecutorJob::PostEditChangeProperty(FPropertyChangedE
 FDeadlineJobPresetStruct UMoviePipelineDeadlineExecutorJob::GetDeadlineJobPresetStructWithOverrides() const
 {
 	// Start with preset properties
-	FDeadlineJobPresetStruct ReturnValue = JobPreset->JobPresetStruct;
+	FDeadlineJobPresetStruct ReturnValue = UE::MoviePipelineDeadlineExecutorJob::Private::GetDeadlineJobPresetStruct(JobPreset);
 	
 	const UMoviePipelineDeadlineSettings* Settings = GetDefault<UMoviePipelineDeadlineSettings>();
 

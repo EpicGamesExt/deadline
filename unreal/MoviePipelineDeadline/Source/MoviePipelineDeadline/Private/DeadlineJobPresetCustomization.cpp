@@ -292,7 +292,7 @@ bool GetPresetValueAsString(const FProperty* PropertyPtr, UMoviePipelineDeadline
 		return false;
 	}
 
-	UDeadlineJobPreset* SelectedJobPreset = Job->JobPreset;
+	UDeadlineJobPreset* SelectedJobPreset = Job ? Job->JobPreset : nullptr;
 	if (!SelectedJobPreset)
 	{
 		return false;
