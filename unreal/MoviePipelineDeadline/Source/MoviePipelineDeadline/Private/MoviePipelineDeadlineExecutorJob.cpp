@@ -32,7 +32,8 @@ namespace UE::MoviePipelineDeadlineExecutorJob::Private
 		}
 
 		UE_LOG(LogMoviePipelineDeadline, Warning, TEXT("Provided Job Preset is empty! Using the default deadline preset struct."));
-		return {};
+		UDeadlineJobPreset* DefaultJob = Cast<UDeadlineJobPreset>(UDeadlineJobPreset::StaticClass()->GetDefaultObject(true));
+		return DefaultJob->JobPresetStruct;
 	}
 }
 
